@@ -1,0 +1,91 @@
+var shop = {
+    data: [
+        {
+            data: [
+                { title: '文件撰写', img: '//img.book118.com/sr1/M00/26/22/wKh2Al_-qWeIA1eUAABuli2-wZIAAotvwEIl0QAAG6u533.png', url: '//zhineng.book118.com/' },
+                { title: '品牌宣传', img: '//img.book118.com/sr1/M00/26/22/wKh2Al_-qUqIVDB9AAB2zfUgZZ8AAotvwCa0WgAAHbl771.png  ', url: '//zhineng.book118.com/' },
+                { title: '论文指导', img: '//img.book118.com/sr1/M00/26/22/wKh2Al_-qSmIWKFzAABqJnFI00gAAotvgH-fg4AAGo-057.png', url: '//zhineng.book118.com/' },
+                { title: 'PPT制作', img: '//img.book118.com/sr1/M00/26/22/wKh2Al_-qTqIFZ4aAAA8p2qOq9kAAotvwBkLboAADy_382.png', url: '//zhineng.book118.com/' }
+            ]
+        },
+        {
+            data: [
+                { title: '表格制作', img: '//img.book118.com/sr1/M00/26/22/wKh2Al_-qPmIS_t6AABRLcomJh8AAotvgEMra8AAFFF235.png', url: '//zhineng.book118.com/' },
+                { title: '演讲稿', img: '//img.book118.com/sr1/M00/0B/2D/wKh2Al_-qYWIbQ2XAABgKEbQxmQAAEk1gEKCuYAAGBA337.png', url: '//zhineng.book118.com/' },
+                { title: '商业报告', img: '//img.book118.com/sr1/M00/26/22/wKh2Al_-qVqIf8NHAABqcT05t1gAAotvwC9vJYAAGqJ908.png', url: '//zhineng.book118.com/' },
+                { title: '行业咨询', img: '//img.book118.com/sr1/M00/26/22/wKh2Al_-qReIXvyXAABjnZr8YVAAAotvgGRygEAAGO1928.png', url: '//zhineng.book118.com/' }
+            ]
+        }
+    ],
+    init: function () {
+        var that = this;
+        that.bind();
+    },
+    bind: function () {
+        var that = this;
+        if (!that.isHas('service-shop')) {
+            $('.service-shop').remove();
+            return false;
+        };
+        $(window).scroll(function () {
+            if (util.isShow($('.service-shop')) && $('.service-shop .carousel').length == 0) {
+                that.create();
+            }
+        });
+        if (util.isShow($('.service-shop'))) {
+            that.create();
+        }
+    },
+    isHas: function (c) {
+        if (typeof window.adList == 'undefined') return false;
+        for (var i = 0; i < window.adList.length; i++) {
+            if (window.adList[i].container == c) {
+                return true;
+            }
+        }
+        return false;
+    },
+    create: function () {
+        util.css('/user_center_v1/static/home/recommend/css/serviceshop.css?v=2020122401');
+        var that = this,
+            c = '<div class="carousel">' +
+                '<ol class="indicators">';
+        for (var i = 0; i < that.data.length; i++) {
+            c += '<li>' +
+                '<a href="javascript:;" data-carousel-to="' + i + '" ' + (i == 0 ? 'class="active"' : '') + '><i></i></a>' +
+                '</li>';
+        }
+        c += '</ol>' +
+            '<ul class="list">';
+        for (var i = 0; i < that.data.length; i++) {
+            c += '<li ' + (i == 0 ? 'class="active"' : '') + '>';
+            for (var j = 0; j < that.data[i].data.length; j++) {
+                c += '<a title="' + that.data[i].data[j].title + '" href="' + that.data[i].data[j].url + '" class="cover" target="_blank">' +
+                    '<img class="lazy" src="/user_center_v1/static/home/recommend/images/load_ad.png" data-src="' + that.data[i].data[j].img + '" alt="' + that.data[i].data[j].title + '">' +
+                    '</a>';
+            }
+            c += '</li>';
+        }
+        c += '</ul></div>';
+        c += '<div class="more">' +
+            '更多定制，进入<a title="知识服务商城" href="//zhineng.book118.com/" class="cover" target="_blank">知识服务商城</a>联系在线客服' +
+            '</div>' +
+            '<div class="tip">广告</div>';
+        $('.service-shop').append(c);
+        that.set();
+    },
+    set: function () {
+        util.carousel({
+            items: '.service-shop ul.list li',
+            indicators: '.service-shop .carousel ol.indicators li a',
+            delay: 6000
+        });
+        setTimeout(function () {
+            var _height = $('.service-shop ul li').height();
+            $('.service-shop ul').height(_height + 'px');
+        }, 200)
+    }
+};
+$(function () {
+    shop.init();
+})

@@ -1,0 +1,1128 @@
+var detail = {
+    init: function(){
+        var that = this;
+        owa.push(['setGlobalEventProperty','aid', base.detail.aid]);
+        that.title();
+        that.intro();
+        that.preview();
+        that.auth();
+        that.activity();
+        that.comment();
+        that.recommend();
+        that.interest();
+        that.relate();
+        that.corpus();
+        that.owa();
+    },
+    title: function(){
+        detail_title.init();
+    },
+    intro: function(){
+        detail_intro.init();
+    },
+    preview: function(){
+        detail_preview.init();
+    },
+    auth: function(){
+        detail_auth.init();
+    },
+    comment: function(){
+        detail_comment.init();
+    },
+    interest: function(){
+        detail_interest.init();
+    },
+    relate: function(){
+        detail_relate.init();
+    },
+    corpus: function(){
+        detail_corpus.init();
+    },
+    owa: function(){
+        detail_owa.init();
+    },
+    activity: function(){
+        detail_activity.init();
+    },
+    recommend:function(){
+        switch (base.detail.status.download) {
+            case 1:
+                //侵权电子书、可在线试读
+                book_layer.init();
+                break;
+            default:
+                break;
+        };
+    }
+};
+var detail_title = {
+    $title: $('.detail .title'),
+    data: {
+        download: base.detail.status.download
+    },
+    init: function(){
+        var that = this;
+        that.status();
+    },
+    status: function(){
+        var that = this;
+        for(var k in that.data ){
+            that[k]();
+        }
+        that.bind();
+    },
+    bind: function(){
+        var that = this;
+        $('#title_download').off('click').on('click',function(){
+            operate_download.init();
+        });
+        $('#title_read').off('click').on('click',function(){
+            operate_read.init();
+        });
+        owa.btn( that.$title.find('ul.operate').find('[data-owa]') );
+    },
+    download: function(){
+        var that = this,
+            $title_download = $('#title_download');
+        switch(that.data.download){
+            case 0:
+                //免费文档
+                break;
+            case 1:
+                //可在线试读
+                that.$title.find('ul.operate').remove();
+                break;
+            case 2:
+                //隐藏下载按钮(可付费阅读 例：川大电子书)
+                if( PAY_READ_NEED == 0 ){
+                    $title_download.parent().html('<a data-owa="title_read" id="title_read" href="javascript:;" class="btn btn-read" title="付费阅读全文">付费阅读全文</a>');
+                }else{
+                    that.$title.find('ul.operate').remove();
+                }
+                break
+            case 3:
+                //付费下载
+                break;
+            case 4:
+                //苍穹电子书
+                $title_download.parent().html('<a data-owa="title_cangqiong"  id="title_cangqiong" class="btn btn-cangqiong" href="' + base.detail.url.cangqiong + '" title="立即阅读本书" target="_blank">立即阅读本书</a>');
+                break;
+            case 5:
+                //可知网电子书
+                if( PAY_READ_NEED == 0 ){
+                    $title_download.parent().html('<a data-owa="title_read" id="title_read" href="javascript:;" class="btn btn-read" title="付费阅读全文">付费阅读全文</a>');
+                }else{
+                    that.$title.find('ul.operate').remove();
+                }
+                break;
+        }
+    }
+};
+var detail_intro = {
+    init: function(){
+        var that = this;
+        that.bind();
+    },
+    bind: function(){
+        $('#operate_report').on('click',function(){
+            // operate_report.init();
+            reward_report.init();
+        });
+        $('#operate_claim').on('click',function(){
+            operate_tort.init();
+        });
+        owa.btn( $('.intro').find('[data-owa]') );
+    }
+};
+var detail_preview = {
+    init: function() {
+        var that = this;
+        switch(base.detail.preview.channel){
+            case 'pic':
+                that.pic();
+                break;
+            case 'office':
+                that.office();
+                break;
+        }
+        that.hd();
+        that.bar();
+    },
+    pic: function(){
+        util.load(__HOME_ROOT__+'/detail/js/preview.pic.js?v=20210604', function(){});
+    },
+    office: function(){
+        util.load(__HOME_ROOT__+'/detail/js/preview.office.js?v=20210415', function(){});
+    },
+    hd: function(){
+        detail_preview_hd.init();
+    },
+    bar: function(){
+        detail_preview_bar.init();
+    }
+};
+var detail_preview_hd = {
+    $hd: $('.preview-hd'),
+    data: {
+        download: base.detail.status.download
+    },
+    init: function(){
+        var that = this;
+        that.status();
+    },
+    status: function(){
+        var that = this;
+        for(var k in that.data ){
+            that[k]();
+        }
+        that.bind();
+    },
+    bind: function(){
+        var that = this;
+        $('#hd_download').off('click').on('click',function(){
+            operate_download.init();
+        });
+        $('#hd_read').off('click').on('click',function(){
+            operate_read.init();
+        });
+        $('#hd_claim').off('click').on('click',function(){
+            operate_tort.init();
+        });
+        owa.btn( that.$hd.find('ul.operate').find('[data-owa]') );
+    },
+    download: function(){
+        var that = this,
+            $hd_download = $('#hd_download');
+        switch(that.data.download){
+            case 0:
+                //免费文档
+                break;
+            case 1:
+                //可在线试读
+                $hd_download.parent().html('<a data-owa="hd_claim" href="javascript:;" class="btn btn-claim" id="hd_claim" title="认领文档">作者认领</a>');
+                break;
+            case 2:
+                //隐藏下载按钮(可付费阅读 例：川大电子书) 
+                if( PAY_READ_NEED == 0 ){
+                    $hd_download.parent().html('<a data-owa="hd_read" href="javascript:;" class="btn btn-read" id="hd_read" title="付费阅读全文">付费阅读全文</a>');
+                }else{
+                    $hd_download.parent().remove();
+                }
+                break
+            case 3:
+                //付费下载
+                break;
+            case 4:
+                //苍穹电子书
+                $hd_download.parent().html('<a data-owa="hd_cangqiong" id="hd_cangqiong" class="btn btn-cangqiong" href="' + base.detail.url.cangqiong + '" title="立即阅读本书" target="_blank">立即阅读本书</a>');
+                break;
+            case 5:
+                //可知网电子书
+                if( PAY_READ_NEED == 0 ){
+                    $hd_download.parent().html('<a data-owa="hd_read" href="javascript:;" class="btn btn-read" id="hd_read" title="付费阅读全文">付费阅读全文</a>');
+                }else{
+                    $hd_download.parent().remove();
+                }
+                break;
+        }
+    }
+};
+var detail_preview_bar = {
+    $bar: $('.preview-bar'),
+    data: {
+        collect: 0,
+        good: 0,
+        share: base.detail.status.share,
+        download: base.detail.status.download
+    },
+    init: function(){
+        var that = this;
+        that.status();
+        if( base.member.status ){
+            that.member();
+        }else{
+            auth.callbacks.push(detail_preview_bar.member);
+        }
+    },
+    status: function(){
+        var that = this;
+        for(var k in that.data ){
+            that[k]();
+        }
+        that.bind();
+    },
+    bind: function(){
+        var that = this;
+        $('#bar_collect').off('click').on('click',function(){
+            that.collectPost();
+        });
+        $('#bar_good').off('click').on('click',function(){
+            that.goodPost();
+        });
+        $('#bar_share').off('click').on('click',function(){
+            operate_share.init();
+        });
+        $('#bar_download').off('click').on('click',function(){
+            operate_download.init();
+        });
+        $('#bar_read').off('click').on('click',function(){
+            operate_read.init();
+        });
+        $('#bar_claim').off('click').on('click',function(){
+            operate_tort.init();
+        });
+        owa.btn( that.$bar.find('ul.operate').find('[data-owa]') );
+    },
+    member: function(){
+        var that = detail_preview_bar;
+        $.ajax({
+            url: base.detail.url.status,
+            type: 'POST',
+            data: { aid: base.detail.aid },
+            dataType: 'JSON',
+            success: function (res) {
+                if( res.code == 1 ){
+                    that.data.collect = +res.data.collect;
+                    that.data.good = +res.data.good;
+                    that.status();
+                }
+            }
+        });
+    },
+    collect: function(){
+        var that = this,
+            $btn = $('.preview-bar ul.operate li.collect a.op');;
+        switch(that.data.collect){
+            case 1:
+                $btn.addClass('has').find('i').html('&#xe6a7;');
+                break;
+            case 0:
+                $btn.removeClass('has').find('i').html('&#xe6a8;');
+                break;
+        }
+    },
+    collectPost: function(){
+        var that = this;
+        $.ajax({
+            url: base.detail.url.collect,
+            type: 'POST',
+            data: { 
+                aid: base.detail.aid ,
+                type: that.data.collect ? 0 : 1
+            },
+            dataType: 'JSON',
+            success: function (res) {
+                switch( res.code) {
+                    case 1:
+                        util.msg(res.message);
+                        that.change('collect',+res.data.status);
+                        break;
+                    case 4:+
+                        member.login({
+                            title: '操作前，请先登录',
+                            callback: function(){
+                                that.collectPost();
+                            }
+                        });
+                        break;
+                    default:
+                        util.msg(res.message);
+                        break;
+                }
+            },
+            error: function () {
+                util.msg('收藏失败！');
+            }
+        });
+    },
+    good: function(count){
+        var that = this,
+            $btn = $('.preview-bar ul.operate li.good a.op');
+        switch(that.data.good){
+            case 1:
+                $btn.addClass('has').find('i').html('&#xe6a3;');
+                count && $btn.find('span').text(count);
+                break;
+            case 0:
+                $btn.removeClass('has');
+                break;
+        }
+    },
+    goodPost: function(){
+        var that = this;
+        $.ajax({
+            url: base.detail.url.good,
+            type: 'POST',
+            data: { 
+                aid: base.detail.aid, 
+                type: 'good' 
+            },
+            dataType: 'JSON',
+            success: function (res) {
+                switch( res.code) {
+                    case 1:
+                        util.msg(res.message);
+                        that.change('good',1,+res.data.goodpost);
+                        break;
+                    case 4:
+                        member.login({
+                            title: '操作前，请先登录',
+                            callback: function(){
+                                that.goodPost();
+                            }
+                        });
+                        break;
+                    default: 
+                        util.msg(res.message);
+                        break;
+                }
+            },
+            error: function () {
+                util.msg('点赞失败！');
+            }
+        });
+    },
+    share: function(){
+        var that = this,
+            $li = $('.bar ul.op li.share');
+        0 === that.data.share && $li.remove();
+    },
+    download: function(){
+        var that = this,
+            $bar_download = $('#bar_download');
+        switch(that.data.download){
+            case 0:
+                //免费文档
+                break;
+            case 1:
+                //可在线试读
+                $bar_download.parent().html('<a href="javascript:;" class="btn btn-claim" id="bar_claim" title="作者认领">作者认领</a>');
+                break;
+            case 2:
+                //隐藏下载按钮(可付费阅读 例：川大电子书)
+                if( PAY_READ_NEED == 0 ){
+                    $bar_download.parent().html('<a href="javascript:;" class="btn btn-read" id="bar_read" title="付费阅读全文">付费阅读全文</a>');
+                }else{
+                    $bar_download.parent().remove();
+                }
+                break;
+            case 3:
+                //付费下载
+                break;
+            case 4:
+                //苍穹电子书
+                $bar_download.parent().html('<a id="bar_cangqiong" class="btn btn-cangqiong" href="' + base.detail.url.cangqiong + '" title="立即阅读本书" target="_blank">立即阅读本书</a>');
+                break;
+            case 5:
+                //可知网电子书
+                if( PAY_READ_NEED == 0 ){
+                    $bar_download.parent().html('<a href="javascript:;" class="btn btn-read" id="bar_read" title="付费阅读全文">付费阅读全文</a>');
+                }else{
+                    $bar_download.parent().remove();
+                }
+                break;
+        }
+    },
+    change: function(k,v,count){
+        var that = this;
+        that.data[k] = v;
+        that[k](count);
+    }
+};
+var detail_preview_good = {
+    $btn: $('#btn_preview_good'),
+    $count: $('#count_preview_good'),
+    data: {
+        good: 0,
+        count: 0
+    },
+    init: function(){
+        var that = this;
+        that.bind();
+    },
+    bind: function(){
+        var that = this;
+        that.data.count = +that.$count.find('span').text();
+        that.$btn.on('click',function(){
+            that.goodPost();
+        });
+    },
+    good: function(post){
+        var that = this;
+        switch( that.data.good ){
+            case 1:
+                that.$btn.addClass('has');
+                that.$btn.find('i').html('&#xe6a3;');
+                if( post ){
+                    that.$btn.next('strong').fadeIn('slow',function(){
+                        $(this).css('display','none');
+                    });
+                }
+                that.$count.find('span').text(that.data.count);
+                break;
+            case 0:
+                that.$btn.find('i').html('&#xe6a4;');
+                break;
+        }
+    },
+    goodPost: function(){
+        var that = this;
+        $.ajax({
+            url: base.detail.url.good,
+            type: 'POST',
+            data: { 
+                aid: base.detail.aid, 
+                type: 'good' 
+            },
+            dataType: 'JSON',
+            success: function (res) {
+                switch( res.code) {
+                    case 1:
+                        util.msg(res.message);
+                        that.data.good = 1;
+                        that.data.count = +res.data.goodpost;
+                        that.good(1);
+                        break;
+                    case 4:
+                        member.login({
+                            title: '操作前，请先登录',
+                            callback: function(){
+                                that.goodPost();
+                            }
+                        });
+                        break;
+                    default: 
+                        util.msg(res.message);
+                        break;
+                }
+            },
+            error: function () {
+                util.msg('点赞失败！');
+            }
+        });
+    }
+};
+var detail_notice = {
+    $notice: $('.detail .notice'),
+    data: {
+        tip: ''
+    },
+    tip: function(){
+        var that = this;
+        that.$notice.find('.tip').find('.list ol').html(that.data.tip);
+    }
+};
+var detail_interest = {
+    $show: $('.detail .notice').length ? $('.detail .notice') : $('.detail .content'),
+    init: function(){
+        var that = this;
+        $(window).on('scroll',that.scroll);
+    },
+    scroll: function(){
+        var that = detail_interest;
+        clearInterval(d);
+        var d = setTimeout(function(){
+            if( util.isShow(that.$show) ){
+                $(window).off('scroll',that.scroll);
+                util.load( __HOME_ROOT__ + '/detail/js/interest.js?v=20210401',function(){
+                    detail_interest.init();
+                },__HOME_ROOT__ + '/detail/css/interest.css?v=20210401');
+            }
+        });
+    }
+};
+var detail_relate = {
+    $relate: $('.detail .relate'),
+    init: function(){
+        var that = this;
+        if( that.$relate.length ){
+            owa.href(that.$relate.find('ul.list > li > a'), 'relate');
+        }
+    }
+};
+var detail_comment = {
+    init: function(){
+        var that = this;
+        that.bind();
+    },
+    bind: function(){
+        var $control = $('.comment .comment-control'),
+            $btn_commit = $('.comment .btn-commit'),
+            $btn_more = $('.comment .btn-more');
+        $control.bind('input porpertychange, focus, blur',function(){
+            operate_comment.compute();
+        });
+        $btn_commit.on('click',function(){
+            operate_comment.commit();
+        });
+        $btn_more.on('click',function(){
+            operate_comment.more();
+        });
+    }
+};
+var detail_auth = {
+    data: {
+        check_if_pay: 0,
+        token: '',
+        read_tips: ''
+    },
+    init: function(){
+        var that = this;
+        auth.callbacks.push(that.callback);
+    },
+    callback: function(){
+        var that = detail_auth;
+        $.ajax({
+            url: base.detail.url.auth.callback,
+            type: 'GET',
+            data: { 
+                aid: base.detail.aid
+            },
+            dataType: 'JSON',
+            success: function (res) {
+                if( res.code == 1 ) {
+                    that.data = res.data;
+                    that.preview()
+                    that.tip();
+                }
+            }
+        });
+    },
+    preview: function(){
+        var that = this;
+        if( that.data.check_if_pay == 1 && that.data.token ){
+            switch(base.detail.preview.channel){
+                case 'pic':
+                    base.detail.preview.pic.pay = PAY_READ_TAG != 1 || that.data.check_if_pay ? false : true;
+                    base.detail.preview.pic.view_token = that.data.token;
+                    break;
+                case 'office':
+                    base.detail.preview.office.pay = PAY_READ_TAG != 1 || that.data.check_if_pay ? false : true;
+                    base.detail.preview.office.src = that.data.token;
+                    break;
+            }
+            preview.change();
+            $('.btn-read').remove();
+        }
+        preview_download.init();
+    },
+    tip: function(){
+        var that = this;
+        if( that.data.read_tips ){
+            detail_notice.data.tip = that.data.read_tips;
+            detail_notice.tip();
+        }
+    }
+};
+var detail_corpus = {
+    data: {
+        list: []
+    },
+    status: 'INIT', 
+    init: function(){
+        var that = this;
+        that.getList();
+    },
+    getList: function(){
+        var that = this;
+        $.ajax({
+            url: base.detail.url.corpus,
+            type: 'GET',
+            data: { 
+                aid: base.detail.aid,
+                t: base.detail.senddate
+            },
+            dataType: 'JSON',
+            success: function (res) {
+                if( res.code == 1 ) {
+                    that.data.list = res.data;
+                }
+            },
+            complete: function(){
+                that.status = 'COMPLETE';
+            }
+        });
+    }
+}
+var detail_owa = {
+    init: function(){
+        owa.push(['setGlobalEventProperty','curent_page', 'detail']);
+    }
+};
+var detail_activity = {
+    data: {
+        activity: base.detail.status.activity
+    },
+    init: function(){
+        var that = this;
+        if( that.data.activity ){
+            util.lazy( __HOME_ROOT__ + '/detail/js/activity.11.11.js?v=20201111',function(){
+                detail_activity_11_11.init();
+            }, __HOME_ROOT__ + '/detail/css/activity.11.11.css?v=20201111');
+        }
+    }
+};
+var side = {
+    init: function(){
+        var that = this;
+        that.publish();
+        that.similar();
+        that.favorite();
+        that.course();
+        that.fixed();
+    },
+    publish: function(){
+        side_publish.init();
+    },
+    similar: function(){
+        side_similar.init();
+    },
+    favorite: function(){
+        side_favorite.init();
+    },
+    fixed: function(){
+        side_fixed.init();
+    },
+    course: function() {
+        side_course.init();
+    }
+};
+var side_course = {
+    init: function() {
+        this.getList();
+    },
+    getList: function() {
+        var $ul = '<ul class="list">',
+            $more = '<div class="more">' +
+                    '<a href="'+base.detail.url.course.cate+'" title="点击查看更多" id="btn_more_video" class="btn-more" target="_blank">查看更多</a>' +
+                    '</div>',
+            param = "",
+            type_path_info = base.detail.typePathInfo;
+        for(var k in type_path_info) {
+            param += type_path_info[k]['id'] + '--';
+        }
+        $.ajax({
+            url: base.detail.url.course.list,
+            data: {
+                category_id: param.slice(0, param.lastIndexOf("--"))
+            },
+            dataType: 'JSON',
+            success: function(res) {
+                if(res.code !== 200 || !res.data || !res.data.length){
+                    $('.side .course').remove();
+                    return;
+                };
+                var data = res.data,
+                    len = data.length,
+                    i = 0;
+                for(;i<len;i++) {
+                    var cur = data[i];
+                    $ul += '<li><a href="'+cur.url+'" title="'+cur.coursetitle+'" target="_blank">' +
+                            '<span class="coursecover"><img class="lazy" src="'+__HOME_ROOT__+'/images/lazy/load.png" data-src="'+cur.coverimage+'" alt="'+cur.coursetitle+'"></span>' +
+                            '<strong>'+cur.coursetitle+'</strong>' +
+                            ' <small>已有'+cur['study_users']+'人学习</small>' +
+                            '</a></li>';
+                }
+                $ul += '</ul>' + $more;
+                $('.side .course .bd').html($ul);
+                setTimeout(function() {
+                    util.lazyImg({
+                        parentSelector: '.course .list',
+                        delay: 0
+                    });    
+                },500)
+                
+            }
+        })
+    }
+};
+var side_publish = {
+    init: function(){
+        var that = this;
+        that.bind();
+    },
+    bind: function(){
+        var that = this;
+        $('#btn_publish_chat').on('click', function() {
+            if( 1 != base.member.status) {
+                member.login({
+                    title: '操作前，请先登录',
+                    callback: function(){
+                        that.chat();
+                    }
+                });
+            }else{
+                that.chat();
+            }
+        })
+    },
+    chat: function(){
+        util.chat({
+			mid: base.detail.mid,
+            aid: base.detail.aid
+		})
+    }
+};
+var side_similar = {
+    $similar: $('.side .similar'),
+    data: {
+        list: []
+    },
+    init: function(){
+        var that = this;
+        that.getList();
+    },
+    getList: function(){
+        var that = this;
+        $.ajax({
+            url: base.detail.url.similar,
+            type: 'GET',
+            data: { 
+                aid: base.detail.aid,
+                t: base.detail.senddate
+            },
+            dataType: 'JSON',
+            success: function (res) {
+                if( res.code == 1 ) {
+                    that.data.list = res.data;
+                }
+            },
+            complete: function(){
+                that.setList();
+            }
+        });
+    },
+    setList: function(){
+        var that = this,
+            data = that.data.list,
+            $ul = '';
+        if( data.length ){
+            $ul += '<ul class="list">';
+            for( var i = 0; i < data.length; i++ ){
+                $ul += '<li class="item">'+
+                            '<a href="'+data[i].url+'" title="'+data[i].strip_title+'" target="_blank">'+
+                                '<strong><i class="icon-font icon-format icon-format-'+data[i].filetype+'"></i> <small>'+data[i].title+'</small></strong>'+
+                                '<span><small class="date">'+data[i].date+'</small><small class="pagenumber">'+data[i].pagenumber+'页</small></span>'+
+                            '</a>'+
+                        '</li>';
+            }
+            $ul += '</ul>';
+            that.$similar.css('display','block').find('.bd').html($ul);
+            setTimeout(function(){
+                owa.href(that.$similar.find('ul.list > li > a'), 'similar');
+            },100);
+            that.prependCorpus();
+        }else{
+            that.$similar.remove()
+        }
+    },
+    prependCorpus: function(){
+        var that = this,
+            c = '',
+            corpus = detail_corpus,
+            t = 0;
+        t = setInterval(function(){
+                if( corpus.status == 'COMPLETE' ){
+                    clearInterval(t);
+                    if( corpus.data.list.length ){
+                        c = '';
+                        for( var i = 0;i < 2; i++ ){
+                            if( corpus.data.list[i] ){
+                                c += '<li class="prepend-corpus">'+
+                                        '<a href="'+corpus.data.list[i].space_url+'" title="关于《'+corpus.data.list[i].label+'》的文档合集" target="_blank">'+
+                                            '<strong><i class="icon-font icon-format icon-format-corpus"></i> <small>关于《<em>'+corpus.data.list[i].label+'</em>》的文档合集</small></strong>'+
+                                            '<span><small class="tag">文集</small></span>'+
+                                        '</a>'+
+                                    '</li>';
+                            }
+                        }
+                        that.$similar.find('ul.list').prepend(c);
+                    }
+                }
+            }, 300);
+    }
+};
+var side_favorite = {
+    $favorite: $('.side .favorite'),
+    init: function(){
+        var that = this;
+        if( that.$favorite.length ){
+            owa.href(that.$favorite.find('ul.list > li > a'), 'favorite');
+        }
+    }
+};
+var side_fixed = {
+    $side: $('#main .side'),
+    $similar: $('.side .similar'),
+    data: {
+        fixed_height: 0,
+        fixed_top: 0
+    },
+    init: function(){
+        var that = this;
+        util.plusEventListener(window,'scroll', that.scroll)
+    },
+    scroll: function(){
+        var that = side_fixed;
+        clearTimeout(d);
+        var d = setTimeout(function () {
+            var is_remove = $('#footer').offset().top - $(window).scrollTop() <= that.data.fixed_height + that.data.fixed_top;
+            if( !util.isShow(that.$side) ){
+                if( $('.side-fixed').length ){
+                    is_remove && $('.side-fixed').remove();
+                }else{
+                    that.fixed();
+                }
+            }else{
+                $('.side-fixed').length && $('.side-fixed').remove();
+            }
+        }, 300);
+    },
+    fixed: function(){
+        var that = this,
+            $fixed = $('<div class="side-fixed"><div class="container"><div class="side"></div></div></div>'),
+            $list = null;
+        if( that.$similar.find('ul.list li').length ){
+            that.data.fixed_height = that.$similar.outerHeight();
+            that.data.fixed_top = that.$similar.offset().top;
+            $list = that.$similar.clone(true);
+        }
+        var is_append = $('#footer').offset().top - $(window).scrollTop() > that.data.fixed_height;
+        if( $list !== null && is_append ){
+            $fixed.find('.side').append($list);
+            $('body').append($fixed);
+            $fixed.fadeIn();
+            setTimeout(function(){
+                owa.href( $('.side-fixed .similar').find('ul.list > li > a'), 'similar_fixed');
+            },100);
+        }
+    }
+};
+var operate_comment = {
+    compute: function(){
+        util.load( __HOME_ROOT__ + '/detail/js/comment.js',function(){
+            operate_comment.compute();
+        });
+    },
+    commit: function(){
+        util.load( __HOME_ROOT__ + '/detail/js/comment.js',function(){
+            operate_comment.commit();
+        });
+    },
+    more: function(){
+        util.load( __HOME_ROOT__ + '/detail/js/comment.js',function(){
+            operate_comment.more();
+        });
+    }
+};
+var operate_download = {
+    init: function(){
+        util.lazy( __HOME_ROOT__ + '/detail/js/download.js?v=20210608',function(){
+            operate_download.init();
+        });
+    }
+};
+var operate_read = {
+    init: function(){
+        util.lazy( __HOME_ROOT__ + '/detail/js/read.js?v=20210112',function(){
+            operate_read.init();
+        });
+    }
+};
+var operate_account = {
+    init: function(pay_center_data,next,type){
+        util.lazy( __HOME_ROOT__ + '/detail/js/account.js?v=20210112',function(){
+            operate_account.init(pay_center_data,next,type);
+        },__HOME_ROOT__ + '/detail/css/account.css?v=20200714');
+    }
+};
+var operate_tort = {
+    init: function(){
+        util.lazy( __HOME_ROOT__ + '/detail/js/tort.js?v=20210607',function(){
+            operate_tort.init();
+        },__HOME_ROOT__ + '/detail/css/tort.css?v=20210607');
+    }
+};
+var operate_share = {
+    init: function(){
+        util.lazy( __HOME_ROOT__ + '/detail/js/share.js?v=20201030',function(){
+            operate_share.init();
+        },__HOME_ROOT__ + '/detail/css/share.css?v=20210201');
+    }
+};
+var operate_report = {
+    init: function(){
+        util.lazy( __HOME_ROOT__ + '/detail/js/report.js',function(){
+            operate_report.init();
+        },__HOME_ROOT__ + '/detail/css/report.css');
+    }
+};
+var book_layer ={
+    init: function(){
+        util.lazy( __HOME_ROOT__ + '/detail/js/bookrecommend.js?v=20210407',function(){
+            recommend.init();
+        },__HOME_ROOT__ + '/detail/css/bookrecommend.css?v=20210407');
+    }
+};
+var reward_report ={
+    init: function(){
+        util.lazy( __HOME_ROOT__ + '/detail/js/reward.report.js?v=20210426',function(){
+            reward_report.init();
+        },__HOME_ROOT__ + '/detail/css/reward.report.css?v=20210426');
+    }
+};
+var preview_download = {
+    data: {},
+    flag: {
+        qrcode: 0
+    },
+    init: function(){
+        var that = this;
+        if( base.detail.status.download == 3 && base.spider == 0 ){
+            if( base.detail.preview.download.qrcode ){
+                switch(that.flag.qrcode){
+                    case 0:
+                        that.scroll();
+                        util.plusEventListener(window,'scroll', that.scroll);
+                        break;
+                    case 1:
+                        that.qrcode();
+                        break;
+                }
+            }else{
+                that.layer('btn');
+            }
+        }
+    },
+    scroll: function(){
+        var that = preview_download,
+            $ft = $('.preview-ft');
+        if( that.flag.qrcode == 0 && $ft.length ){
+            clearInterval(d);
+            var d = setTimeout(function(){
+                var is_show = util.isShow($ft) || Math.abs( $ft.offset().top - $(window).scrollTop() ) < 300;
+                if( that.flag.qrcode == 0 && is_show ){
+                    that.flag.qrcode = 1;
+                    util.delEventListener(window,'scroll', that.scroll)
+                    that.qrcode();
+                }
+            },300);
+        }
+    },
+    qrcode: function(){
+        var that = this,
+            $qrcode = $('#preview_qrcode');
+        $.ajax({
+            url: base.detail.url.download.init,
+            method: 'GET',
+            data: {
+                aid: base.detail.aid,
+                trans_type: 'downs'
+            },
+            beforeSend: function(){
+                if( $qrcode.length ){
+                    $qrcode.find('.expire,.scanned').css('display','none');
+                    $qrcode.find('.loading').css('display','block');
+                }
+                clearInterval(preview_qrcode.timers.turning);
+                clearTimeout(preview_qrcode.timers.expire);
+            },
+            success: function( res ) {
+                if(res.code == 100 ){
+                    that.confirm();
+                }else{
+                    that.layer('btn');
+                }
+            },
+            error: function(){
+                that.layer('btn');
+            }
+        });
+    },
+    confirm: function(){
+        var that = this;
+        $.ajax({
+            url: base.detail.url.download.confirm,
+            method: 'GET',
+            data: {
+                aid: base.detail.aid,
+                trans_type: 'downs'
+            },
+            success: function( res ) {
+                switch(res.code){
+                    case 201:
+                        res.data.login = 0;
+                        that.layer('qrcode',res.data);
+                        break;
+                    case 202:
+                        res.data.login = 1;
+                        that.layer('qrcode',res.data);
+                        break;
+                    default:
+                        that.layer('btn');
+                        break;
+                }
+            },
+            error: function(){
+                that.layer('btn');
+            }
+        });
+    },
+    layer: function(type,data) {
+        var $btns = $('.preview .preview-ft .btns');
+        switch(type){
+            case 'btn':
+                $('#btn_preview_download').length && $('#btn_preview_download').remove();
+                $('#preview_qrcode').length && $('#preview_qrcode').remove();
+                if( $btns.find('.read_and_download').length ){
+                    $btns.find('.read_and_download').append('<button type="button" id="btn_preview_download" class="btn btn-download">下载文档</button>');
+                }else{
+                    $btns.append('<div class="read_and_download"><button type="button" id="btn_preview_download" class="btn btn-download">下载文档</button></div>');
+                }
+                $('#btn_preview_download').on('click',function(){
+                    operate_download.init();
+                });
+                break;
+            case 'qrcode':
+                $('#preview_qrcode').length == 0 && $btns.append('<div id="preview_qrcode"></div>');
+                preview_qrcode.init(data);
+                break;
+        }
+    }
+};
+var preview_qrcode = {
+    timers: {
+        turning: 0,
+        expire: 0
+    },
+    init: function(data){
+        util.load( __HOME_ROOT__ + '/detail/js/preview.qrcode.js',function(){
+            preview_qrcode.init(data);
+        },__HOME_ROOT__ + '/detail/css/preview.qrcode.css');
+    }
+};
+var hit = {
+    name: 'a_'+ base.detail.aid,
+    init: function(){
+        var that = this;
+        switch(base.spider){
+            case 0:
+                that.request();
+                break;
+            case 1:
+                break;
+        }
+    },
+    request: function(){
+        var that = this;
+        if (!util.cookie.get(that.name) ) {
+            $.get(base.detail.url.hit + '&aid='+base.detail.aid);
+            owa.load(['trackAction','doc_click', 'pc']);
+        }
+    }
+};
+$(function(){
+    detail.init();
+    side.init();
+    hit.init();
+});

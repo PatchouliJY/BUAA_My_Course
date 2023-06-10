@@ -1,0 +1,1292 @@
+var header = {
+    init: function () {
+        var that = this;
+        that.drop();
+        that.logo();
+        that.nav();
+        that.menu();
+        if( base.spider == 0 ){
+            setTimeout(function(){
+                that.fixed();       
+            },500);
+        }
+    },
+    drop: function(){
+        header_drop.init();
+    },
+    logo: function(){
+        header_logo.init();
+    },
+    nav: function(){
+        header_nav.init();
+    },
+    menu: function(){
+        header_menu.init();
+    },
+    member: function(){
+        header_drop.init();
+    },
+    fixed: function(){
+        header_fixed.init();
+    }
+};
+var header_drop = {
+    data: {
+        course: 1,
+        all: 1,
+        client: 1,
+        upload: 1,
+        track: 1,
+        member: 0
+    },
+    init: function(){
+        var that = this;
+        that.data.member = member.data.status;
+        that.bind();
+    },
+    bind: function(){
+        var that = this,
+            $header = $('.header'),
+            $drop = '<div class="drop-down">'+
+                        '<div class="icon-triangle"></div>'+
+                        '<div class="panel"></div>'+
+                    '</div>';
+        $header.find('[data-header-drop]').hover(function () {
+            $(this).find('i.icon-common-drop-down-big').removeClass('icon-common-drop-down-big').addClass('icon-common-drop-up-big');
+        },function(){
+            $(this).find('i.icon-common-drop-up-big').removeClass('icon-common-drop-up-big').addClass('icon-common-drop-down-big');
+        });
+        $header.find('[data-header-drop]').each(function(){ 
+            var k = $(this).attr('data-header-drop');
+            if( that.data[k] && $(this).children('.drop-down').length == 0 ){
+                $(this).append($drop);
+            }
+            $(this).mouseenter(function () {
+                var $this = $(this);
+                if( !$this.children('.drop-down').length || $this.children('.drop-down').find('.panel').html() == '' ){
+                    var k = $this.attr('data-header-drop');
+                    that[k]();
+                }
+            });
+        });
+    },
+    course: function(){
+        header_course.init();
+    },
+    all: function(){
+        header_all.init();
+    },
+    client: function(){
+        header_client.init();
+    },
+    upload: function(){
+        header_upload.init();
+    },
+    track: function(){
+        header_track.init();
+    },
+    member: function(){
+        header_member.init();
+    }
+};
+var header_logo = {
+    init: function(){
+        var that = this;
+        that.bind();
+    },
+    bind: function(){
+        $('.header .logo > a').on('click',function(){
+            owa.load(['trackAction', 'header_logo', 'pc']);
+        });
+    }
+};
+var header_nav = {
+    init: function(){
+        var that = this;
+        that.bind();
+    },
+    bind: function(){
+        $('.header ul.nav > li > a').on('click',function(){
+            var source = 'header_nav_' + $(this).parent('li').attr('class');
+            var _href = $(this).attr('href');
+            _href = _href.substr(0,4).toLocaleLowerCase() != 'http' ? window.location.origin + _href : _href;
+
+            owa.load(['trackAction', source, 'pc']);
+            owa.load(['setCvtRef', _href, source + '_href']);
+        });
+    }
+};
+var header_menu = {
+    init: function(){
+        var that = this;
+        that.bind();
+    },
+    bind: function(){
+        $('.header ul.menu > li > a').on('click',function(){
+            var source = 'header_menu_' + $(this).parent('li').attr('class');
+            owa.load(['trackAction', source, 'pc']);
+        });
+    }
+};
+var header_course = {
+    // TODO 若视频课堂分类id有变，请修改对应的URL
+    data: [
+        { url: '//ke.book118.com/category_105.html', title: '薪酬设计', owa: 'header_course_105', nofollow: true },
+        { url: '//ke.book118.com/category_128.html', title: '互联网营销', owa: 'header_course_128', nofollow: true },
+        { url: '//ke.book118.com/category_106.html', title: '绩效管理/考核', owa: 'header_course_106', nofollow: true },
+        { url: '//ke.book118.com/category_74.html', title: '顶层设计', owa: 'header_course_74', nofollow: true },
+        { url: '//ke.book118.com/category_81.html', title: '领导力', owa: 'header_course_81', nofollow: true },
+        { url: '//ke.book118.com/category_179.html', title: '税务筹划', owa: 'header_course_179', nofollow: true },
+        { url: '//ke.book118.com/category_72.html', title: '商业模式', owa: 'header_course_72', nofollow: true },
+        { url: '//ke.book118.com/category_104.html', title: '人力资源规划', owa: 'header_course_104', nofollow: true }
+    ],
+    init: function(){
+        var that = this,
+            $li = $('[data-header-drop=course]'),
+            c = '<ul class="list">';
+        for( var i = 0; i < that.data.length; i++ ){
+            c += '<li><a href="'+that.data[i].url+'" target="_blank" title="'+that.data[i].title+'"' + ( that.data[i].nofollow ? ' rel="nofollow" ' : ' ' ) + 'data-owa="'+that.data[i].owa+'">'+that.data[i].title+'</a></li>';
+        }
+        c += '</ul>';
+        $li.find('.drop-down').find('.panel').html(c);
+        setTimeout(function(){
+            that.bind();
+        },100);
+    },
+    bind: function(){
+        owa.btn( $('[data-header-drop=course]').find('[data-owa]') );
+    }
+};
+var header_all = {
+    data: {
+        tool: {
+            title: '文档服务',
+            list: [
+                { url: '//paper.book118.com/home/Checkheavy/index.html', title: '论文查重', owa: 'header_all_checkheavy', nofollow: true },
+                { url: '//paper.book118.com/home/Removeheavy/index.html', title: '智能降重', owa: 'header_all_removeheavy', nofollow: true },
+                { url: '//www.book118.com/tool/pdf2word', title: 'PDF转WORD', owa: 'header_all_pdf2word', nofollow: true }
+            ]
+        },
+        knowledge: {
+            title: '知识服务',
+            list:[
+                {url: '//zhineng.book118.com', title: '美工设计', owa: 'header_all_knowledge_0', nofollow: true},
+                {url: '//zhineng.book118.com', title: '文案写作', owa: 'header_all_knowledge_1', nofollow: true},
+                {url: '//zhineng.book118.com', title: 'PPT制作', owa: 'header_all_knowledge_2', nofollow: true}
+            ]
+        },
+        ask: {
+            title: '悬赏问答',
+            list: [
+                {url: 'http://ask.mzhishi.com', title: '最新悬赏', owa: 'header_all_reward', nofollow: true},
+                {url: 'http://ask.mzhishi.com/album/hot.html', title: '自问自答', owa: 'header_all_hot', nofollow: true}
+            ]
+        },
+        zips: {
+            title: '资料包文档',
+            list: [
+                {url: '//www.zip118.com/down.html', title: '资料包上传', owa: 'header_all_zipupload', nofollow: true},
+                {url: '//www.zip118.com', title: '资料包下载', owa: 'header_all__zipdownload', nofollow: true}
+            ]
+        }
+    },
+    init: function(){
+        var that = this,
+            $li = $('[data-header-drop=all]'),
+            c = '';
+        for( var k in that.data ){
+            list = that.data[k].list;
+            c += '<dl class="'+k+'">'+
+                    '<dt>'+ that.data[k].title +'</dt>'+
+                    '<dd>';
+            for( var i = 0; i < list.length; i++ ){
+                c += '<a href="'+list[i].url+'" target="_blank" title="'+list[i].title+'"' + ( list[i].nofollow ? ' rel="nofollow" ' : ' ' ) + 'data-owa="'+list[i].owa+'">'+list[i].title+'</a>';
+            }
+            c += '</dd>'+
+                '</dl>';
+        }
+        $li.find('.drop-down').find('.panel').html(c);
+        setTimeout(function(){
+            that.bind();
+        },100);
+    },
+    bind: function(){
+        owa.btn( $('[data-header-drop=all]').find('[data-owa]') );
+    }
+};
+var header_client = {
+    data: [
+        // { src: '//img.book118.com/sr1/M00/0D/19/wKh2AmAXcuOILQLwAAAfTs5BPsUAAe5lAG1SQMAAB_P598.png', title: '关注微信公众号', desc: '查找文档更方便' },
+        { src: '//img.book118.com/sr1/M00/06/1A/wKh2AmAXcxeIFgmvAAAJ3V1IH_QAACgfwBRXqQAAAn1226.png', title: '扫码下载官方APP', desc: '海量文档随身查' }
+        // { src: '//img.book118.com/sr1/M00/28/0B/wKh2AmAXc0CIF2G4AAA7zm9ZZrUAApW4wCvGcUAADvm319.png', title: '原创力微信小程序', desc: '微信扫码无需安装' }
+    ],
+    init: function(){
+        var that = this,
+            $li = $('[data-header-drop=client]'),
+            c = '<ul class="qrcodes">';
+        for( var i = 0; i < that.data.length; i++ ){
+            c += '<li>'+
+                    '<img alt="'+ that.data[i].title +'" src="'+ that.data[i].src +'"/>'+
+                    '<strong>'+ that.data[i].title +'</strong>'+
+                    '<span>'+ that.data[i].desc +'</span>'+
+                '</li>';
+        }
+        c += '</ul>';
+        $li.find('.drop-down').find('.panel').html(c);
+    }
+};
+var header_upload = {
+    data:[
+        {url: '/user_center_v1/upload.html', title: '立即上传', owa: 'header_upload_now'},
+        {url: '/college/category1.html', title: '新手指南', owa: 'header_upload_college_category1'},
+        {url: '/user_center_v1/doc/index/index.html#income', title: '提现', owa: 'header_upload_income'}
+    ],
+    init: function(){
+        var that = this,
+            $li = $('[data-header-drop=upload]'),
+            c = '<ul class="list">';
+        for(var i = 0;i<that.data.length; i++) {
+            c += '<li><a href="'+that.data[i].url+'" target="_blank" title="'+that.data[i].title+'"' + ( that.data[i].nofollow ? ' rel="nofollow" ' : ' ' ) + 'data-owa="'+that.data[i].owa+'">'+that.data[i].title+'</a></li>';
+        }
+        c += '</ul>';
+        $li.find('.drop-down').find('.panel').html(c);
+        setTimeout(function(){
+            that.bind();
+        },100);
+    },
+    bind: function(){
+        owa.btn( $('[data-header-drop=upload]').find('[data-owa]') );
+    }
+};
+var header_track = {
+    flag: {
+        time: 0,
+        status: false
+    },
+    data: {
+        browse: { title: '浏览', active: true },
+        collect: { title: '收藏' },
+        buy: { title: '购买' }
+    },
+    list: {
+        browse: [],
+        collect: [],
+        buy: []
+    },
+    init: function(){
+        var that = this,
+            $li = $('[data-header-drop=track]'),
+            c = '',
+            tab_nav = '<ul class="tab-nav clear">',
+            tab_items = '<div class="tab-items">';
+        for( var k in that.data ){
+            tab_nav += '<li><a href="javascript:;" title="'+that.data[k].title+'记录" data-tab-target="'+k+'"' + ( that.data[k].active ? 'class="active"': '' ) +'>'+that.data[k].title+'记录</a></li>';
+        }
+        tab_nav += '</ul>';
+        for( var k in that.data ){
+            tab_items += '<div '+ ( that.data[k].active ? 'class="tab-item active"': 'class="tab-item"' ) +' data-tab-item="'+k+'">' + that.empty(k) + '</div>';
+        }
+        tab_items += '</div>';
+        c = tab_nav + tab_items;
+        $li.find('.drop-down').find('.panel').html(c);
+        that.bind();
+    },
+    refresh: function(){
+        var that = header_track,
+            $li = $('[data-header-drop=track]');
+        if( $li.find('.drop-down').find('.panel').html() != '' ){
+            that.flag.status = 0;
+            that.flag.time = 0;
+            that.getList();
+        }
+    },
+    bind: function(){
+        var that = this;
+        if( !that.flag.status && that.flag.time < 2 ){
+            that.getList();
+        }
+        setTimeout(function(){
+            util.tab($('[data-header-drop=track]'));
+            if( !that.flag.status && that.flag.time < 2 ){
+                that.getList();
+            }
+        },100);
+    },
+    empty: function(item){
+        var that = this,
+            c = '<div class="empty">'+
+                        '<img src="' + __HOME_ROOT__+ '/common/images/empty.png"/>'+
+                        '<span>您未'+ that.data[item].title +'过任何文档~</span>'+
+                        ( member.data.status == 1 ? '' : '<a class="login" href="javascript:;" title="立即登录">登录</a>' ) +
+                '</div>';
+        return c;
+    },
+    getList: function(){
+        var that = this,
+            $tab = $('[data-header-drop=track]').find('.tab-items');
+        if( !that.flag.status ){
+            $.ajax({
+                url: base.member.url.track,
+                type: 'GET',
+                dataType: 'JSON',
+                beforeSend: function(){
+                    that.flag.status = true;
+                    ++that.flag.time;
+                    $tab.find('.tab-item').html('<div class="loading"></div>');
+                    that.list = {
+                        browse: [],
+                        collect: [],
+                        buy: []
+                    }
+                },
+                success:function(res) {
+                    switch( res.code) {
+                        case 1:
+                            for( var i in res.data ){
+                                that.list[i] = res.data[i];
+                            }
+                            that.flag.status = true;
+                            break;
+                        case 4:
+                            member.login({
+                                title: '请先登录',
+                                callback: function(){
+                                    that.getList();
+                                }
+                            });
+                            that.flag.status = false;
+                            break;
+                        default: 
+                            that.flag.status = false;
+                            break;
+                    }
+                },
+                error: function(){
+                    that.flag.status = false;
+                },
+                complete: function(){
+                    that.setList();
+                }
+            });
+        }
+    },
+    setList: function(){
+        var that = this,
+            $items = $('[data-header-drop=track]').find('.tab-items');
+        for( var item in that.list ){
+            var data = that.list[item],
+                $item = $items.find('[data-tab-item="'+item+'"]');
+            if( data.length ){
+                var $ul = '<ul class="list">',
+                    max = data.length > 7 ? 6 : data.length;
+                for( var i = 0; i < max; i++ ){
+                    $ul += '<li>'+
+                                '<a href="'+ data[i].url +'" title="'+ data[i].title + '"' + (data[i].is_del == 0 ? '" target="_blank"' : '') + ">" +
+                                    '<i class="icon-font icon-format icon-format-'+ data[i].filetype +'"></i> '+
+                                    '<span>'+ data[i].title +'</span>'+
+                                '</a>'+
+                            '</li>';
+                }
+                $ul += data.length > 7 ? '<div class="more"><a href="'+base.member.menu[item]+'" title="查看更多" target="_blank">查看更多</a></div>' : '';
+                $ul += '</ul>';
+                $item.html($ul);
+            }else{
+                $item.html(that.empty(item));
+            }
+        }
+        setTimeout(function(){
+            $('[data-header-drop=track]').find('a.login').off('click').on('click',function(){
+                member.login();
+                var source = 'track_login_' + $(this).parents('.tab-item').attr('data-tab-item');
+                owa.load(['trackAction', source, 'pc']);
+            });
+            $('[data-header-drop=track]').find('.more a').off('click').on('click',function(){
+                var source = 'track_more_' + $(this).parents('.tab-item').attr('data-tab-item');
+                owa.load(['trackAction', source, 'pc']);
+            });
+            $('[data-header-drop=track]').find('ul.list > li > a').off('click').on('click',function(){
+                var _href = $(this).attr('href'),
+                    source = 'track_href_' + $(this).parents('.tab-item').attr('data-tab-item');
+                _href = _href.substr(0,4).toLocaleLowerCase() != 'http' ? window.location.origin + _href : _href;
+                owa.load(['setCvtRef', _href, source]);
+            });
+        },100);
+    }
+};
+var header_member = {
+    init: function(){
+        var that = this,
+            data = member.data,
+            $li = $('[data-header-drop=member]'),
+            c = '<div class="info">' +
+                    '<div class="avator">' +
+                        '<a data-owa="member_avator" href="'+base.member.menu.index+'" title="个人中心" target="_blank">' +
+                            '<img src="'+__HOME_ROOT__+'/common/images/avator.png"/>' +
+                        '</a>' +
+                    '</div>' +
+                    '<dl class="profile">' +
+                        '<dt><a data-owa="member_profile" href="'+base.member.menu.setting+'" title="个人设置" target="_blank"></a></dt>' +
+                        '<dd>' +
+                            '<span>金币：' + data.money + '</span>' +
+                            '<a data-owa="member_recharge" href="'+base.member.menu.recharge+'" title="充值" target="_blank">充值</a>' +
+                        '</dd>' +
+                    '</dl>' +
+                    '<div class="quit">' +
+                        '<a class="member-quit" href="javascript:;" title="立即退出">退出</a>' +
+                    '</div>' +
+                '</div>' +
+                '<ul class="sub-menu">' +
+                    '<li><a data-owa="member_doc" href="'+base.member.menu.doc+'" title="我的文档" target="_blank"><i class="icon icon-member-nav icon-member-nav-doc"></i> <span>我的文档</span></a></li>' +
+                    '<li><a data-owa="member_uploader" href="'+base.member.menu.uploader+'" title="成为上传者" target="_blank"><i class="icon icon-member-nav icon-member-nav-corpus"></i> <span>成为上传者</span></a></li>' +
+                    '<li>'+
+                        '<a data-owa="member_message" href="'+base.member.menu.message+'" title="消息通知" target="_blank"><i class="icon icon-member-nav icon-member-nav-message"></i> <span>消息通知</span> ' +
+                        ( data.messageNums > 99 ? '<em class="icon icon-common icon-common-badge-big">99+</em>' : data.messageNums ? '<em class="icon icon-common icon-common-badge-min">' + data.messageNums + '</em>' : '' ) +
+                        '</a>' +
+                    '</li>' +
+                    '<li><a data-owa="member_setting" href="'+base.member.menu.setting+'" title="个人设置" target="_blank"><i class="icon icon-member-nav icon-member-nav-setting"></i> <span>账号设置</span></a></li>' +
+                '</ul>';
+        $li.find('.drop-down').find('.panel').html(c);
+        that.bind();
+    },
+    bind: function(){
+        setTimeout(function(){
+            $('[data-header-drop=member]').find('a.member-quit').on('click',function(){
+                member.quit();
+            });
+            $('[data-header-drop=member]').find('dl.profile dt a').text(member.data.userid);
+            owa.btn( $('[data-header-drop=member]').find('[data-owa]') );
+        },100);
+    }
+};
+var header_fixed = {
+    flag: {
+        qrcode: 0
+    },
+    init: function(){
+        var that = this;
+        that.scroll();
+        util.plusEventListener(window,'scroll', that.scroll);
+    },
+    scroll: function(){
+        var that = header_fixed,
+            $header = $('#header');
+        clearTimeout(d);
+        var d = setTimeout(function () {
+            var $header_fixed = $('#header_fixed');
+            if( $(window).scrollTop() >= 200 && $header.attr('style') != 'display: none;'){
+                $header_fixed.length == 0 && that.fixed();
+            }else{
+                $header_fixed.length && $header_fixed.remove();
+                that.flag.qrcode = 0;
+            }
+        }, 300);
+    },
+    fixed: function(){
+        var that = header_fixed;
+            $title = $('.detail .title'),
+            $header = $('#header'),
+            $header = $header.clone('true'),
+            logo_src = $header.find('.logo a img').attr('src'),
+            $operate = $title.length  && $title.find('ul.operate').length ? $title.find('ul.operate').clone(true) : null;
+        if( $operate && $operate.find('[data-owa]').length ){
+            var source = $operate.find('[data-owa]').attr('data-owa') + '_fixed';
+            $operate.find('[data-owa]').attr('data-owa',source);
+        }else if(typeof rewardFindDoc != 'undefined' && rewardFindDoc){
+            $operate='<ul class="reward"><li><a href="http://ask.book118.com/question/notice.html" class="btn btn-find-doc" id="btn_find_doc" title="悬赏找文档" target="_blank">悬赏找文档</a></li></ul>'
+        }
+        $header.attr('id','header_fixed');
+        logo_src = logo_src.replace('logo.png','logo_fixed.png');
+        $header.find('.logo a img').attr('src',logo_src);
+        $header.find('.search .btn-search').html('搜索');
+        $header.find('.search .search-drop-down').find('ul.recommend,ul.auto').css('display','none');
+        $header.find('.search').after($operate);
+        $header.find('ul.nav').remove();
+        $header.css('display','none');
+        $header.fadeIn();
+        $('body').append($header);
+        $('.header .search .search-drop-down').find('ul.recommend,ul.auto').css('display','none');
+        if( base.detail && base.detail.aid ){
+            that.qrcode();
+        }
+    },
+    qrcode: function(){
+        var that = header_fixed,
+            c = '<div class="mqrcode">'+
+                        '<a href="javascript:;" title="手机阅读"><i class="icon-header">&#xe6a1;</i><span>手机阅读</span></a>'+
+                        '<div class="drop-down">'+
+                            '<div class="icon-triangle"></div>'+
+                            '<div class="panel">'+
+                                '<div class="qrcode">'+
+                                    '<img class="icon" src="'+__HOME_ROOT__+'/images/qrcode/logo.png"/>'+
+                                    '<div id="header_fixed_qrcode_img"></div>'+
+                                '</div>'+
+                                '<div class="tip">手机扫码继续阅读</div>'+
+                            '</div>'+
+                        '</div>'+
+                      '</div>';
+        $header.find('ul.menu').replaceWith(c);
+        $('.header .mqrcode > a').on('click',function(){
+            if( !that.flag.qrcode ){
+                that.flag.qrcode = 1;
+                util.qrcode({
+                    id: 'header_fixed_qrcode_img',
+                    text: window.location.href.replace(window.location.hostname,'m.book118.com') + '?from=max-new-detail',
+                    width: 120,
+                    height: 120
+                });
+            }
+            if( $(this).next('.drop-down').is(':hidden') ){
+                $(this).next('.drop-down').css('display','block');
+            }else{
+                $(this).next('.drop-down').css('display','none');
+            }
+        });
+        $(document).on("click", function(e) {
+            var _conss = $('.header .mqrcode');//点击的容器范围
+            if (!_conss.is(e.target) && _conss.has(e.target).length === 0) {
+                _conss.find('.drop-down').css('display','none');
+            }
+        });
+    }
+};
+var search = {
+    $recommend: $('<ul class="recommend list" style="display: none"></ul>'),
+    $auto: $('<ul class="auto list" style="display: none"></ul>'),
+    flag: {
+        active: '',
+        v: '',
+        keywords: 0,
+        auto: ''
+    },
+    timer: {
+        recommend: 0,
+        auto: 0
+    },
+    init: function () {
+        var that = this;
+        that.bind();
+    },
+    bind: function(){
+        var that = this,
+            $keywords = $(".search input[name=keywords]"),
+            $btn = $('.search .btn-search');
+        if( $keywords.attr('placeholder') == '' ){
+            $keywords.attr('placeholder',$keywords.attr('aria-label'));
+        }
+        $keywords.keydown(function (e) {
+            e.keyCode == 13 && that.sub('keydown');
+        });
+        $keywords.bind('focus',function(){
+            var $search = $(this).parents('.search'),
+                p = $(this).attr('placeholder'),
+                v = $.trim($(this).val());
+            //兼容ie
+            if( $(this).attr('aria-hover') == 'clear' ){
+                if( v == p ){
+                    $(this).val('');
+                    that.recommend($search);
+                }else if( v == '' ){
+                    that.recommend($search);
+                }else{
+                    that.auto($search);
+                }
+            }else{
+                if( v.length && v != p){
+                    that.auto($search);
+                }else{
+                    that.recommend($search);
+                }
+            }
+            $keywords.each(function(){
+                !util.isShow($(this)) && $(this).val(v);
+            });
+        });
+        $keywords.bind('click',function(){
+            var $search = $(this).parents('.search'),
+                v = util.trimSpace($(this).val());
+            if( v.length == 0 ){
+                that.recommend($search);
+            }else{
+                that.auto($search);
+            }
+        });
+        $keywords.bind('input propertychange',function(){
+            var $search = $(this).parents('.search'),
+                v = $.trim($(this).val());
+            //兼容ie
+            if( $(this).attr('aria-hover') == 'clear' && that.flag.keywords == 0 ){
+                if( v != '' ){
+                    that.flag.v = v;
+                    that.flag.keywords = 1;
+                }
+                return;
+            }
+            if( that.flag.v != v ){
+                var p = $(this).attr('placeholder');
+                if( v.length && v != p ){
+                    that.auto($search);
+                }else{
+                    that.recommend($search);
+                }
+                that.flag.v = v;
+            }
+            $keywords.each(function(){
+                !util.isShow($(this)) && $(this).val(v);
+            });
+        });
+        $(document).click(function(event){
+            var e = window.event || event,
+                target = e.target || e.srcElement;
+            if ( $(target).parents('.search').length == 0 ){
+                if( $keywords.attr('aria-hover') == 'clear' ){
+                    var p = $keywords.attr('placeholder'),
+                        v = util.trimSpace($keywords.val());
+                    if( v == '' ){
+                        that.flag.keywords = 0;
+                        $keywords.val(p);
+                    }
+                }
+                setTimeout(function(){
+                    that.hide();
+                },50);
+            };
+        });
+        $(document).keydown(function(event){
+            var e = event || window.event || arguments.callee.caller.arguments[0];
+            if( e ){
+                switch(e.keyCode){
+                    case 38: //上
+                    that.up();
+                    break;
+                    case 40: //下
+                    that.down();
+                    break;
+                }
+            }
+        });
+        $btn.click(function () {
+            that.sub('btn');
+        });
+    },
+    sub: function(from, v ,auto) {
+        /**
+         * from 来源
+         *   keydown - 回车
+         *   btn - 搜索按钮
+         *   history - 历史
+         *   autocomplete - 自动联想
+         */
+        var that = this,
+            key_active = $('.search .search-drop-down li.active:visible').find('a').attr('title'),
+            $keywords = $(".search input[name=keywords]"),
+            key_p = $keywords.attr('placeholder') != $keywords.attr('aria-label') ? $keywords.attr('placeholder') : '',
+            key_v = $.trim($keywords.val());
+        key_v = key_v != '' ? key_v : key_p;
+        v = !v && key_active ? key_active : v;
+        v = v ? v : key_v;
+        if ( v != "" && v != $keywords.attr('aria-label') ) {
+            that.wordSub(v,auto);
+            $keywords.val(v);
+            that.hide();
+            var searchFrom = 'banner';
+            $keywords.each(function(){
+                if( util.isShow($(this)) ){
+                   var _id = $(this).parents('.header').attr('id') || 'banner';
+                   owa.load(['trackAction', 'btn_search_' + _id, 'pc']);
+                   searchFrom = _id;
+                }
+            });
+            setTimeout(function(){
+                var searchHref = base.search.url.sub + encodeURI(v);
+                var _href = searchHref;
+                var source = searchFrom + '_search_' + from;
+                _href = _href.substr(0,4).toLocaleLowerCase() != 'http' ? window.location.origin + _href : _href;
+                owa.load(['trackAction', source, 'pc']);
+                owa.load(['setCvtRef', _href, source + '_href']);
+
+                window.location.href = searchHref;
+            },300);
+        }
+    },
+    wordSub:function(v,auto){
+        var data ={
+            keyword: $(".search input[name=keywords]").val(),
+            title:''
+        }
+        if(base&&base.detail&&base.detail.aid){
+            data.title=base.detail.title;
+            data.keyword= $(".search input[name=keywords]").val()==''?$(".search input[name=keywords]").attr('placeholder'):$(".search input[name=keywords]").val()
+        }
+        if(auto){
+            data.auto_completion=v;
+        }
+        $.ajax({
+            url: '/user_center_v1/home/Search/searchWordSubmit',
+            type: "POST",
+            data: data,
+            dataType: 'JSON'
+        })
+    },
+    hide: function(){
+        $('.search .search-drop-down').find('ul.recommend, ul.auto').css('display','none');
+        $('.search .search-drop-down li.item').removeClass('active');
+    },
+    recommend: function($search){
+        var that = this,
+            $drop = $search.find('.search-drop-down');
+        $drop.find('ul.auto').css('display','none');
+        if( 0 === that.$recommend.find('li').length ){
+            if( 0 === that.timer.recommend ){
+                $.ajax({
+                    url: base.search.url.recommend,
+                    type: "GET",
+                    data: {
+                        title: base.detail && base.detail.title ? base.detail.title : ''
+                    },
+                    dataType: 'JSON',
+                    beforeSend: function(){
+                        that.timer.recommend = 1;
+                    },
+                    success: function( res ){
+                        if( res.code == 1 && ( res.data.log.length || res.data.hot.length ) ){
+                            var li = '';
+                            if( res.data.log.length ){
+                                li += '<li class="log"><strong>历史搜索</strong><span class="clear-history" title="点击清空历史搜索记录"><i class="icon-font icon-common icon-common-remove"></i> 清空搜索</span></li>';
+                                for(var i = 0 ; i < res.data.log.length ; i++ ){
+                                    li += '<li class="item log"><a href="javascript:;" title="'+ res.data.log[i] +'">'+ res.data.log[i] +'</a></li>';
+                                }
+                            }
+                            if( res.data.hot.length ){
+                                li += '<li class="hot"><strong>相关搜索</strong></li>';
+                                for(var i = 0 ; i < res.data.hot.length ; i++ ){
+                                    li += '<li class="item hot"><a href="javascript:;" title="'+res.data.hot[i]+'">'+ res.data.hot[i] +' <i class="icon-font icon-common icon-common-hot"></i></a></li>';
+                                }
+                            }
+                            that.$recommend.append(li);
+                            that.$recommend.find('span.clear-history').on('click',function(){
+                                $drop.find('ul.recommend li.log').remove();
+                                $.get(base.search.url.clear);
+                            });
+                            that.$recommend.find('a').on('click',function(){
+                                var t = $(this).attr('title');
+                                that.sub('history', t, true);
+                            });
+                            $drop.append(that.$recommend);
+                            $drop.find('ul.recommend').css('display','block');
+                        }
+                    }
+                });
+            }
+        }else{
+            $drop.find('ul.recommend').css('display','block');
+        }
+    },
+    auto: function($search){
+        var that = this,
+            $keywords = $search.find('input[name=keywords]'),
+            $drop = $search.find('.search-drop-down'),
+            v = util.trimSpace($keywords.val());
+        $drop.find('ul.recommend').css('display','none');
+        if( 0 === that.timer.auto ){
+            if( 0 === v.length ){
+                that.recommend($search);
+                return false;
+            }
+            if( v === that.flag.auto ){
+                if( that.$auto.find('li').length ){
+                    $drop.find('ul.recommend').css('display','none');
+                    $drop.find('ul.auto').css('display','block');
+                }
+                return false;
+            }
+            that.timer.auto = setTimeout(function(){
+                $.ajax({
+                    url: base.search.url.auto,
+                    data: { 
+                        keywords: v, 
+                        pagesize: 10 
+                    },
+                    type: 'POST',
+                    dataType: 'JSON',
+                    beforeSend: function(){
+                        that.flag.auto = v;
+                    },
+                    success: function( res ){
+                        if( res.code == 1 && res.data.length ){
+                            var li = '';
+                            for(var i = 0 ; i < res.data.length ; i++ ){
+                                li += '<li class="item auto"><a href="javascript:;" title="'+ res.data[i].title +'">'+ res.data[i].title_hl +'</a></li>';
+                            }
+                            that.$auto.html(li);
+                            that.$auto.find('a').on('click',function(){
+                                var t = $(this).attr('title');
+                                that.sub('autocomplete', t, true);
+                            });
+                            if( $drop.find('ul.auto').length == 0 ){
+                                $drop.append(that.$auto);
+                            }
+                            if( util.trimSpace($keywords.val()) ){
+                                $drop.find('ul.auto').css('display','block');
+                            }
+                        }else{
+                            that.$auto.css('display','none').html('');
+                        }
+                    },
+                    complete:function(){
+                        that.timer.auto = 0;
+                        that.auto($search);
+                    }
+                });
+            },300);
+        }
+    },
+    up: function(){
+        var eq = 0,
+            $li = $('.search .search-drop-down li.item:visible');
+        if( $li.length ){
+            $li.each(function(index){
+                if( $(this).hasClass('active') ){
+                    eq = index;
+                }
+            });
+            eq--;
+            eq = eq < 0 ? 0 : eq;
+            $li.removeClass('active'); 
+            $li.eq(eq).addClass('active');
+        }
+    },
+    down: function(){
+        var eq = -1,
+            $li = $('.search .search-drop-down li.item:visible');
+        if( $li.length ){
+            $li.each(function(index){
+                if( $(this).hasClass('active') ){
+                    eq = index;
+                }
+            });
+            eq++;
+            eq = eq < $li.length ? eq : 0;
+            $li.removeClass('active'); 
+            $li.eq(eq).addClass('active');
+        }
+    }
+};
+var sidebar = {
+    init: function () {
+        var that = this;
+        $('#sidebar .sidebar-item').hover(function(){
+            $(this).find('.slip').css('display','block');
+        },function(){
+            $(this).find('.slip').css('display','none');
+        });
+        that.sign();
+        that.demandcollect();
+        that.qq();
+        that.wechat();
+        that.top();
+        that.prize();
+    },
+    prize:function(){
+        $('#sidebar .sidebar-prize .sidebar-item-on').on('click',function () {
+            if(typeof base.detail!='undefined'&&base.detail.aid){
+                reward_report.init();
+            }else{
+                window.open( $(this).attr('data-href'), '_blank' );
+            }
+        });
+    },
+    sign: function(){
+        if( base.sidebar_sign ){
+            $('#sidebar .sidebar-sign').on('click',function () {
+                window.open( base.sidebar_sign, '_blank' );
+            });
+        }
+    },
+    demandcollect: function() {
+        $('#sidebar .sidebar-demandcollect').on('click',function () {
+            // 0 max  1 电子书 2 视频站
+            var source = 0;
+            if(base.bookstore) {
+                source = 1;
+            }
+            layer.open({
+                type: 2,
+                closeBtn: 0,
+                area: ['936px', '550px'],
+                content: __OPEN_HOST__+'/api/Server/index?source='+source,
+                success: function(layero, index){
+                    layero.css({
+                        borderRadius: '10px',
+                        overflow: 'hidden'
+                    });
+                }
+            });
+        });
+    },
+    qq: function(){
+        $('#sidebar ul.list > li.sidebar-qq .panel ul.qq li a').on('click',function(){
+            window.open('tencent://message/?uin='+ $(this).attr('data-qq'),'_blank');
+        });
+    },
+    wechat: function(){
+        $('#sidebar .sidebar-wechat').mouseenter(function(){
+            var $img = $(this).find('.panel').find('img'),
+                data_src = $img.attr('data-src');
+            if( data_src ){
+                $img.attr('src',data_src);
+                $img.removeAttr('data-src');
+            }
+        });
+        $(window).scroll(function() {
+            clearInterval(d);
+            var d = setTimeout(function(){
+                if( util.isShow($('#footer') )){
+                    $('#sidebar .sidebar-wechat').fadeOut(300);
+                }else{
+                    $('#sidebar .sidebar-wechat').fadeIn(300);
+                }
+            },300)
+        });
+    },
+    top: function(){
+        $(window).scroll(function() {
+            clearInterval(d);
+            var d = setTimeout(function(){
+                if($(window).scrollTop() >= 100){
+                    $('#sidebar .sidebar-top').fadeIn(300);
+                }else{
+                    $('#sidebar .sidebar-top').fadeOut(300);
+                }
+            },300)
+        });
+        $('#sidebar .sidebar-top').on('click',function(){
+            $('html,body').animate({
+                scrollTop: '0px'
+            }, 1000);
+        });
+    }
+};
+var toggle = {
+    init: function($parent){
+        var that = this;
+            $btn = $parent ? $parent.find('.btn-toggle-more') : $('.btn-toggle-more');
+        setTimeout(function(){
+            $btn.on('click',function(){
+                that.more(this);
+            });
+        },100);
+    },
+    more: function(o){
+        var $this = $(o),
+            $box = $this.parents('.btn-toggle-more-box'),
+            $role = $this.parents('[role=toggle-more]'),
+            role_class = $role.attr('data-class');
+        $role.removeClass(role_class);
+        $box.remove();
+    }
+};
+var member = {
+    callbacks: [],
+    data: {
+        status: 0,
+        userid: '',
+        money: '0.000',
+        messageNums: 0
+    },
+    init: function(){
+        var that = this;
+        $('.header ul.menu li.member').find('a').on('click',function(){
+            that.login();
+        });
+        if( base.member.status ){
+            that.header();
+        }else{
+            owa.push(['setGlobalEventProperty','member_uname', '']);
+        }
+    },
+    header: function(){
+        var that = this,
+            $li = $('.header ul.menu li.member');
+        $.ajax({
+            url: base.member.url.info,
+            type: 'GET',
+            dataType: 'JSON',
+            success:function(res) {
+                if ( res.code == '200' ) {
+                    $li.attr('data-header-drop','member');
+                    $li.children('a').off("click")
+                        .attr('title','个人中心')
+                        .attr('href',base.member.menu.index)
+                        .attr('target','_blank')
+                        .html('<img src="'+__HOME_ROOT__+'/common/images/avator.png"/><span></span>')
+                        .on('click',function(){
+                            owa.load(['trackAction', 'header_menu_member_avator', 'pc']);
+                        });
+                    setTimeout(function(){
+                        $li.children('a').find('span').text(res.data.userid)
+                    },100);
+                    that.data = {
+                        status: 1,
+                        userid: res.data.userid,
+                        money: res.data.money,
+                        messageNums: res.data.messageNums
+                    };
+                    owa.push(['setGlobalEventProperty','member_uname', res.data.userid]);
+                    header.member();
+                    if( that.callbacks.length ){
+                        for(var i = 0; i < that.callbacks.length; i++ ){
+                            that.callbacks[i]();
+                        }
+                        flag = 1;
+                    }
+                }else{
+                    that.data = {
+                        status: 0,
+                        userid: '',
+                        money: '0.000',
+                        messageNums: 0
+                    };
+                    owa.push(['setGlobalEventProperty','member_uname', '未登录']);
+                }
+            }
+        });
+    },
+    login: function(options){
+        auth.init({
+            title: options && typeof options.title != 'undefined' ? options.title : '登录',
+            callback: function(){
+                owa.load(['trackAction', 'header_menu_member_login', 'pc']);
+                options && typeof options.callback != 'undefined' && jQuery.isFunction(options.callback) && options.callback();
+            }
+        });
+    },
+    quit: function() {
+        $.ajax({
+            url: base.member.url.quit,
+            type: 'GET',
+            dataType: 'JSON',
+            success:function(res) {
+                switch( res.code) {
+                    case 1:
+                        util.msg(res.message,'reload');
+                        break;
+                    case 4:
+                        break;
+                    default: 
+                        util.msg(res.message);
+                        break;
+                }
+            }
+        });
+    }
+};
+var auth = {
+    _layer: 0,
+    callbacks: [
+        function(){
+            member.header();
+            header_track.refresh();
+        }
+    ],
+    _options: {},
+    init: function(options){
+        var that = this,
+            t = '';
+        that._options = options;
+        t = that._options && typeof that._options.title != 'undefined' ? that._options.title : '操作前，请先登录';
+        layer.open({
+            type: 2,
+            title: t,
+            area: ['422px', '500px'],
+            content: __OPEN_HOST__+'/login/login/popindex.html',
+            success: function (layero, index) {
+                that._layer = index;
+				that.layero = layero;
+            }
+        });
+    },
+    authen: function(options){
+        var that = this;
+        $.ajax({
+            url: base.auth.url.status,
+            type: 'GET',
+            success: function(res) {
+                switch( res.code) {
+                    case 1:
+                        if( +res.data.checkoriginal === 1 ){
+                            if( typeof options != 'undefined' && jQuery.isFunction(options.callback) ){
+                                options.callback();
+                            }
+                        }else{
+                            if( typeof auth_authen != 'undefined' ){
+                                auth_authen.init(options);
+                            }else{
+                                util.lazy( __HOME_ROOT__ + '/auth/js/authen.js',function(){
+                                    auth_authen.init(options);
+                                },__HOME_ROOT__ + '/auth/css/authen.css');
+                            }
+                        }
+                        break;
+                    case 4:
+                        that.init(options);
+                        break;
+                    default:
+                        util.msg(res.message);
+                        break;
+                }
+            }
+        });
+    },
+    status: function(options){
+        var that = this;
+        $.ajax({
+            url: base.auth.url.status,
+            type: 'GET',
+            success: function(res) {
+                switch( res.code) {
+                    case 1:
+                        if( typeof options != 'undefined' && jQuery.isFunction(options.callback) ){
+                            options.callback();
+                        }
+                        break;
+                    case 4:
+                        that.init(options);
+                        break;
+                    default: 
+                        util.msg(res.message);
+                        break;
+                }
+            }
+        });
+    },
+    callback: function (res) {
+        var that = this,
+            _options_callback = typeof res._options_callback == 'undefined' ? true : res._options_callback,
+            flag = 0;
+        if( res.status == 200 ){
+            $.ajax({
+                url: base.member.url.login + ( res.datas.must_token ?  '?token='+ res.datas.token : '' ),
+                type: 'GET',
+                dataType: 'JSON',
+                success: function(res) {
+                    switch(res.code){
+                        case 1:
+                            base.member.status = 1;
+                            layer.close(that._layer);
+                            if( that.callbacks.length ){
+                                for(var i = 0; i < that.callbacks.length; i++ ){
+                                    that.callbacks[i]();
+                                }
+                                flag = 1;
+                            }
+                            if( _options_callback && typeof that._options != 'undefined' && typeof that._options.callback != 'undefined' && jQuery.isFunction(that._options.callback) ) {
+                                that._options.callback();
+                                flag = 1;
+                            }
+                            if( flag == 0 ){
+                                util.msg(res.message,'reload');
+                            }
+                            break;
+                        default:
+                            util.msg(res.message);
+                            break;
+                    }
+                },
+                error: function () {
+                    util.msg('登录失败');   
+                }
+            });
+        }
+    }
+};
+var owa_cmds = owa_cmds || [];
+var owa = {
+    init: function(){
+        owa_cmds.push(['setSiteId', 'max_v2']);
+    },
+    //只添加值
+    push: function(arr){
+        if( arr.length ){
+            owa_cmds.push(arr);
+        }
+    },
+    //需要加载js，添加值
+    load: function(arr){
+        var that = this;
+        if( arr.length ){
+            if ( typeof OWA == 'undefined' ) {
+                util.js('//e-s.book118.com/modules/base/js/owa.tracker-combined-min.js?v=20200902', function () {
+                    that.push(arr);
+                });
+            }else{
+                that.push(arr);
+            }
+        }
+    },
+    href: function($href,source){
+        var that = this;
+        if( $href.attr('owa-href') != 'had' ){
+            $href.on('click',function(){
+                var _href = $(this).attr('href');
+                _href = _href.substr(0,4).toLocaleLowerCase() != 'http' ? window.location.origin + _href : _href;
+                source = $(this).attr('data-owa') ? $(this).attr('data-owa') : source;
+                that.load(['setCvtRef', _href, source]);
+            }).attr('owa-href','had');
+        }
+    },
+    btn: function($btn,source){
+        var that = this;
+        if( $btn.attr('owa-btn') != 'had' ){
+            $btn.on('click',function(){
+                source = $(this).attr('data-owa') ? $(this).attr('data-owa') : source;
+                that.load(['trackAction', source, 'pc']);
+            }).attr('owa-btn','had');
+        }
+    },
+    click: function($btn,source){
+        var that = this;
+        if( $btn.attr('owa-click') != 'had' ){
+            $btn.on('click',function(){
+                var _href = $(this).attr('href');
+                _href = _href.substr(0,4).toLocaleLowerCase() != 'http' ? window.location.origin + _href : _href;
+                source = $(this).attr('data-owa') ? $(this).attr('data-owa') : source;
+                that.load(['trackAction', source, 'pc']);
+                that.load(['setCvtRef', _href, source + '_href']);
+            }).attr('owa-click','had');
+        }
+    }
+};
+var cover = {
+    init:function(){
+        if(util.getIeVersion()==7){
+            var items = $('span.cover');
+            items.on('click',function(){
+                window.open($(this).parent().attr('href'),"_blank");
+            })
+        }
+    }
+};
+$(function () {
+    header.init();
+    search.init();
+    sidebar.init();
+    toggle.init();
+    member.init();
+    cover.init();
+    owa.init();
+});
+
+//百度统计 
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?f32e81852cb54f29133561587adb93c1";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+
+//360主动提交 因为js请求失败暂注释
+// (function(){
+//    var src = (document.location.protocol == "http:") ? "http://js.passport.qihucdn.com/11.0.1.js?26fb9b80bf4ee77cdf3269dee3000850":"https://jspassport.ssl.qhimg.com/11.0.1.js?26fb9b80bf4ee77cdf3269dee3000850";
+//    document.write('<script src="' + src + '" id="sozz"><\/script>');
+// })();

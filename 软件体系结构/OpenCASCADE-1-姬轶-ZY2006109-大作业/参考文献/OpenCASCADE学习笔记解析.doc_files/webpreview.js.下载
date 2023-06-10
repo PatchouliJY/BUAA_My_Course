@@ -1,0 +1,1299 @@
+if(!Array.prototype.indexOf){
+    Array.prototype.indexOf = function(obj,start){
+        for(var index=(start || 0), j = this.length; index < j;index ++ ){
+            if(this[index]===obj){
+                return index;
+            }
+        }
+        return -1;
+    }
+}
+;(function (root,$,PATH) {
+    root.WebPreview = {
+        /**
+         * 基础数据配置
+         * @param Base.pick: 主节点
+         * @param Base.url: request请求地址
+         * @param Base.data: request请求data，aid:文档id值，page：页数值，view_token：必传
+         * @param Base.page: 页数相关配置信息，init:初始显示多少页，lazy：超过几页以后才使用懒加载方式，zone：每几页为一个请求
+         * @param Base.times: 定时请求最多多少次;
+         * @param Base.timeout: 每次定时请求间隔时间;
+         * @param Base.remain: 是否自动继续预览，不需要点击“立即免费阅读”
+         **/
+        Base: {
+            host: 'https://openapi.book118.com',
+            auto: true,
+            pick: '#pick',
+            theme: 'default',
+            data: {},
+            page: { init: 5, lazy: 2, zone: 6 },
+            times: 25,
+            timeout: 3000,
+            remain: true,
+            sections: 0, //是否继续再分段
+            owa: false
+        },
+
+        /**
+         * 预览涉及到的资源存储
+         * @param Data.current_page: type(int) 记录当前页数
+         * @param Data.preview_page: type(int) 记录当前文档可预览的页数
+         * @param Data.actual_page: type(int) 记录当前文档真实的页数
+         * @param Data.remain_page: type(int) 记录当前可预览页数里面还有多少页每页呈现出来
+         * @param Data.images: type(array) 存储当前预览的所有图片子集，包括（状态，地址，次数）
+         * @param Data.success_pages: type(array) 已拿到图片地址的页集合
+         * @param Data.scroll_pages: type(array) 记录哪些页被浏览过，用以定时器请求的页数集合
+         * @param Times.init: 初始化页面请求次数;
+         **/
+
+        Data: {
+            current_page: 1,
+            preview_page: 0,
+            actual_page: 0,
+            remain_page: 0,
+            images: [],
+            success_pages: [],
+            scroll_pages: []
+        },
+        /**
+         * 标识符
+         * @param Flag.scrollTop: 上一次鼠标所在位置
+         * @param Flag.scrollInterval: 滚动差最低多少才执行判断页数
+         * @param Flag.isJump: 如果是input跳转不记录预览过多少页
+         * @param Flag.naturalHeight: 图片的高度
+         * @param Flag.initStatus: 是否初始化成功 默认：'INIT' ,SUCCESS:成功， FAIL: 失败;
+         **/
+        Flag: {
+            scrollTop: 0,
+            scrollInterval: 0,
+            isJump: false,
+            naturalHeight: 0,
+            initStatus: 'INIT'
+        },
+        /**
+         * 错误处理
+         * @param 10001: 参数错误
+         * @param 10002: 非法操作
+         * @param 10003: 内部服务错误
+         * @param 10004: 文档不存在
+         * @param 10005: 用老通道
+         **/
+        exception: function ( res ) {
+            var that = this,
+                error = '';
+            switch (res.status) {
+                case 10004:
+                    error = '<h2>文档不存在或已删除~</h2>';
+                    break;
+                case 10005:
+                    that.channel(res.data.title,res.data.view_url);
+                    break;
+                default:
+                    error = '<h2>预览加载失败~</h2><div class="btns"><button type="button" id="webpreview_reload" class="btn-reload">重新加载</button><button type="button" id="webpreview_feedback" class="btn-feedback">预览反馈</button></div>';
+                    break;
+            }
+            var $error = $('<div class="webpreview-error"><i class="webpreview-icon-error">&nbsp;</i>'+ error +'</div>');
+            $(WebPreview.Base.pick).html($error);
+            $error.find('#webpreview_reload').on('click',function () {
+                window.location.reload();
+            });
+            $error.find('#webpreview_feedback').on('click',function () {
+                that.Feedback.init();
+            });
+        },
+        /**
+         * 已请求过的次数
+         * @param Times.init: 初始化页面请求次数;
+         **/
+        Times: { init: 0 },
+        /**
+         * 定时器对象
+         * @param Timers.imageLazy: 图片懒加载，每次只能允许一张图片请求加载;
+         * @param Timers.init: 初始化页面;
+         * @param Timers.request: 根据页数请求图片;
+         **/
+        Timers: { imageLazy: 0, init: 0, request: 0 },
+        /**
+         * 记录时间戳对象
+         * @param Timestamp.create: 初始化的时间戳;
+         * @param Timestamp.success: 有页面加载成功的时间戳;
+         * @param Timestamp.scroll: 每次滚动记录当前时间戳;
+         * @param Timestamp.page: 记录最大预览的页数;
+         **/
+        Timestamps: { create: 0, success: 0, scroll: 0, page: 1 },
+        /**
+         * 创建WebPreview对象
+         * @param options: 业务方自定义配置项;
+         * @return Preview对象，用于业务方的回调监听
+         **/
+        create: function (options) {
+            var that = WebPreview;
+            if( typeof options.data != 'undefined' ) that.Base.data = options.data;
+            if( typeof options.theme != 'undefined' ) that.Base.theme = options.theme;
+            if( typeof options.auto != 'undefined' ) that.Base.auto = options.auto;
+            if( typeof options.pick != 'undefined' ) that.Base.pick = options.pick;
+            if( typeof options.remain != 'undefined' ) that.Base.remain = options.remain;
+            if( typeof options.sections != 'undefined' ) that.Base.sections = options.sections;
+            if( typeof options.owa != 'undefined' ) that.Base.owa = options.owa;
+            if( typeof options.actual != 'undefined' ) that.Data.actual_page = options.actual;
+            if( typeof options.preview != 'undefined' ) that.Data.preview_page = options.preview;
+            if( that.Base.auto ){
+                that.init();
+            }
+            if( that.Base.theme != ''){
+                that.Util.css(that.Base.theme);
+                if( that.Base.theme == 'mobile' ){
+                    that.Util.zoom(that.Base.theme);
+                    if( that.Util.isAppleWebKit() ){
+                        that.Util.fastClick(that.Base.theme);
+                    }
+                }
+            }
+            $(WebPreview.Base.pick).html('<div class="webpreview-item webpreview-init"><div class="loading"><em></em><em></em><em></em><em></em><em></em><em></em><em></em><em></em><em></em><em></em><em></em><em></em><span>预览加载中，请您耐心等待几秒...</span></div></div>');
+            that.Timestamps.create = new Date().getTime();
+            return that.Preview;
+        },
+
+        /**
+         * 每个图片的生命周期
+         * @param
+         * Image.append: 向容器里面添加dom
+         * Image.onLoad: 图片加载完成时
+         * Image.onError: 图片加载错误时
+         * Image.status: 判定item的状态
+         * Image.success: 图片地址已拿到
+         * Image.fail: 图片地址没有拿到
+         * Image.error: 图片地址已拿到但是加载出错/图片地址没有拿到且请求次数超过限制
+         * Image.lazy: 当前页更改的时候才触发图片的真正加载
+         **/
+
+        Image: {
+            append: function(i){
+                var that = WebPreview,
+                    $pick = $(that.Base.pick),
+                    $item = $('<div class="webpreview-item" data-id="'+ i +'"><div class="loading"><em></em><em></em><em></em><em></em><em></em><em></em><em></em><em></em><em></em><em></em><em></em><em></em><span>预览加载中，请您耐心等待几秒...</span></div><img oncontextmenu="return false;" ondragstart="return false;" onload="WebPreview.Image.onLoad(this)" onerror="WebPreview.Image.onError(this)"></div><div class="webpreview-split">&nbsp;</div>');
+                if( that.Flag.naturalHeight ){
+                    $item.eq(0).css('minHeight',that.Flag.naturalHeight );
+                }
+                if( $pick.find('[data-id="'+i+'"]').length > 0 ){
+                    return false;
+                }
+                $pick.append($item);
+            },
+            onLoad: function(o){
+                var that = WebPreview,
+                    $img = $(o),
+                    _minHeight = that.Base.theme == 'mobile' ? 200 : 600,
+                    natureSize = this.getNaturalSize(o)
+                    $item = $img.parent('.webpreview-item'),
+                    _naturalHeight = $img.height();
+                $img.prev('.loading').remove();
+                if( _naturalHeight > 0 ){
+                    if( that.Flag.naturalHeight == 0 ){
+                        _minHeight = _naturalHeight > _minHeight ? _naturalHeight : _minHeight;
+                        that.Flag.scrollInterval = parseInt(_minHeight / 1.5);
+                        that.Flag.naturalHeight = _minHeight;
+                        $(that.Base.pick).find('.webpreview-item').css('minHeight', _minHeight);
+                        $item.css('minHeight',_naturalHeight + 'px');
+                        that.Base.theme == 'default' &&  $(that.Base.pick).append('<div class="webpreview-grab"></div>');
+                    }else{
+                        _naturalHeight = _naturalHeight + 'px';
+                        if( _naturalHeight != that.Flag.naturalHeight ){
+                            $item.css('minHeight',_naturalHeight);
+                        }
+                    }
+                    if( that.Base.theme != 'mobile' && that.Base.data.filetype.indexOf('xls') != -1 ){
+                        _naturalHeight = natureSize.height + 'px';
+                        $item.css('minHeight',_naturalHeight);
+                        $img.css('maxWidth','none');
+                        $item.attr('data-scroll','x').css({'overflowX': 'scroll','overflowY':'hidden'});
+                    }
+                }
+
+                $(that.Base.pick).find('.webpreview-item').each(function(index){
+                    $(this).off('click').on('click', function() {
+                        if($(this).find('.webpreview-error').length > 0) return
+
+                        if(typeof _previewElement == 'object') {
+                            _previewElement.init({
+                                targetEle: '.webpreview-item',
+                                targetSign: 'data-id',
+                                current: index,
+                                callback: function(i) {
+                                    if(that.Data.images[i].src) {
+                                        that.Image.lazy(i);
+                                    } else {
+                                        that.Data.current_page = i;
+                                        that.requestTimer();
+                                    }
+                                }
+                            });
+                        }
+                    });
+                });
+            },
+            onError: function(o){
+                var that = this,
+                    _error = false,
+                    $img = $(o),
+                    $item = $img.parent();
+                if (!$img.complete) {
+                    _error = true;
+                }
+                if ( typeof $img.naturalWidth != "undefined" && $img.naturalWidth == 0) {
+                    _error = true;
+                }
+                if(_error){
+                    that.error($item);
+                }
+            },
+            remain: function(i){
+                var that = WebPreview,
+                    image = that.Data.images[i];
+                if( image.status == 'success' ){
+                    $(that.Base.pick).find('[data-id="' + i + '"]').find('img').attr('src', image.src).css('display','block');
+                }else{
+                    that.request(i);
+                }
+            },
+            status: function(data){
+                var that = this;
+                for(var i in data ){
+                    var src = data[i];
+                    if( src != 'undefined' && src != '' && src != null){
+                        that.success(i,src);
+                    }else{
+                        that.fail(i);
+                    }
+                }
+            },
+            success: function(i,src){
+                i = parseInt(i);
+                var _WebPreview = WebPreview,
+                    $item = $(_WebPreview.Base.pick).find('[data-id="' + i + '"]'),
+                    $error = $item.find('.webpreview-error'),
+                    $img = $item.find('img');
+                if( _WebPreview.Data.success_pages.indexOf(i) != -1 ){
+                    return false;
+                }
+                _WebPreview.Data.images[i] = { status: 'success',src: src,times: 0 };
+                _WebPreview.Data.success_pages.push( i );
+                if( $error.length > 0 ){
+                    $error.replaceWith('<div class="loading"><em></em><em></em><em></em><em></em><em></em><em></em><em></em><em></em><em></em><em></em><em></em><em></em><span>预览加载中，请您耐心等待几秒...</span></div>');
+                }
+                if( i <= _WebPreview.Base.page.lazy || $img.hasClass('direct') ) {
+                    $img.attr('src',src).css('display','block');
+                }else{
+                    $img.attr('class','lazy').attr('data-src', src);
+                    if(typeof _previewElement == 'object') {
+                        _previewElement.imageInit(i, src);
+                    }
+                }
+            },
+            fail: function(i){
+                i = parseInt(i);
+                var that = this,
+                    image = WebPreview.Data.images[i];
+                if( image.status == 'fail' ){
+                    if( image.times < WebPreview.Base.times ){
+                        image.times ++;
+                    }else{
+                        that.error($(WebPreview.Base.pick).find('[data-id="' + i + '"]'));
+                    }
+                }else{
+                    image = { status: 'fail',src: '',times: 0 };
+                }
+            },
+            error: function($item){
+                var that = WebPreview,
+                    i = parseInt( $item.attr('data-id') ),
+                    $loading = $item.find('.loading'),
+                    $img = $item.find('img'),
+                    $error = $('<div class="webpreview-error"><i class="webpreview-icon-error">&nbsp;</i><h2>预览加载失败，请重新加载试试~ </h2><div class="btns"><button type="button" class="btn-reload">重新加载</button></div></div>');
+                $img.removeAttr('style').removeAttr('src').removeAttr('class').removeAttr('data-src');
+                that.Util.arrayRemove(that.Data.success_pages,i);
+                that.Data.images[i] = { status: 'error',src: '',times: 0 };
+                if( $loading.length > 0 ){
+                    $loading.replaceWith($error);
+                }else{
+                    $item.prepend($error);
+                }
+                $('.btn-reload').on('click',function (event) {
+                    event.stopPropagation();
+                    var that = WebPreview,
+                        $item = $(this).parents('.webpreview-item'),
+                        i = parseInt( $item.attr('data-id') ),
+                        $img = $item.find('img');
+                    if( i > 0 ){
+                        that.Data.images[i] = { status: 'fail',src: '',times: 0 };
+                        $item.find('.webpreview-error').replaceWith('<div class="loading"><em></em><em></em><em></em><em></em><em></em><em></em><em></em><em></em><em></em><em></em><em></em><em></em><span>预览加载中，请您耐心等待几秒...</span></div>');
+                        if( i > that.Base.page.lazy ){
+                            $img.attr('class','direct');
+                        }
+                        that.request(i);
+                    }
+                });
+            },
+            lazy: function(i){
+                var that = WebPreview;
+                clearInterval(that.Timers.imageLazy);
+                that.Timers.imageLazy = setInterval(function () {
+                    if(typeof _previewElement == 'object') {
+                        _previewElement.imageLazy(i, that.Data.images[i].src);
+                    }
+                    var $img = $(that.Base.pick).find('[data-id="' + i + '"]').find('img'),
+                        _src = $img.attr('data-src');
+                    if( $img.hasClass('lazy') && typeof _src != 'undefined' && _src != ''){
+                        $img.attr('src',_src).attr('class','').css('display','block');
+                        clearInterval(that.Timers.imageLazy);
+                    }
+                },300);
+            },
+            getNaturalSize: function(_img) {
+                var natureSize = {};
+                if(_img.naturalWidth && _img.naturalHeight) {
+                    natureSize.width = _img.naturalWidth;
+                    natureSize.height = _img.naturalHeight;
+                } else {
+                    var img = new Image();
+                    img.src = _img.src;
+                    natureSize.width = img.width;
+                    natureSize.height = img.height;
+                }
+                return natureSize;
+            }
+        },
+        /**
+         * 初始化页面
+         * @param _timeout:前6次间隔2000请求一次，超过6次以后间隔3000请求一次
+         * @for WebPreview
+         **/
+        init: function () {
+            var that = this,
+                _timeout = that.Times.init > 6 ? 3000: 2000;
+            if( that.Times.init > that.Base.times ){
+                clearInterval(that.Timers.init);
+                that.initFail(0,'加载失败');
+                $.ajax({
+                    url: that.Util.getAjaxUrl(1) + '&flag=1',
+                    dataType: 'jsonp',
+                    timeout: 3000,
+                    success: function (res) {
+                        that.exception(res);
+                    }
+                });
+                return false;
+            }
+            /*如果是第一次，就把当前初始页数作为浏览记录存储*/
+            if( that.Data.scroll_pages.length == 0 ){
+                for(var i = 1 ; i <= that.Base.page.init; i++ ){
+                    that.Data.scroll_pages[i] = i;
+                }
+            }
+            $.ajax({
+                url: that.Util.getAjaxUrl(1),
+                dataType: 'jsonp',
+                timeout: 3000,
+                beforeSend: function(){
+                    that.Times.init++;
+                },
+                success: function (res) {
+                    if( res.status == 200 ){
+                        if( $.isEmptyObject(res.data) ){
+                            setTimeout(function (){
+                                that.init();
+                            },_timeout);
+                            return false;
+                        }
+                        if( that.Flag.initStatus == 'INIT'){
+                            for(var i in res.data ){
+                                if( typeof res.data[i] != 'undefined' && res.data[i] != '' ){
+                                    that.Base.data.filetype = res.pages.filetype || '';
+                                }
+                                break;
+                            }
+                        }
+                        if( that.initSuccess( res.data ) ){
+                            that.Image.status( res.data );
+                            that.Page.fix( res.pages );
+                            if( that.Base.remain ){
+                                that.remain();
+                            }
+                        }else{
+                            setTimeout(function (){
+                                that.init();
+                            },_timeout);
+                        }
+                    }else{
+                        that.initFail(res);
+                    }
+                },
+                error: function () {
+                    setTimeout(function (){
+                        that.init();
+                    },_timeout);
+                }
+            });
+        },
+        /**
+         * 初始化请求成功即修改页面html
+         * @param flag: 判定是否是第一次加载成功
+         * @for WebPreview
+         **/
+        initSuccess: function(data){
+            var that = this,
+                flag = false,
+                remain_page = 0;
+            if( that.Flag.initStatus == 'INIT'){
+                for(var i in data ){
+                    if( typeof data[i] != 'undefined' && data[i] != '' ){
+                        that.Flag.initStatus = 'SUCCESS';
+                        remain_page = that.Data.preview_page - that.Base.page.init;
+                        that.Data.remain_page = remain_page > 0 ? remain_page : 0;
+                        that.fn.initStatus('SUCCESS');
+                        flag = true;
+                        that.Timestamps.success = new Date().getTime();
+                        that.Owa.init();
+                    }
+                    break;
+                }
+            }
+            if( flag ){
+                $(that.Base.pick).find('.webpreview-init').remove();
+                for(var i in data ) {
+                    i = parseInt(i);
+                    that.Data.images[i] = { status: 'init',src: '',times: 0 };
+                    if( i <= that.Base.page.init ){
+                        that.Image.append(i);
+                    }
+                }
+                $(that.Base.pick).css('cursor', 'grab');
+                that.Page.getLast();
+                $(window).on('scroll',function (){
+                    that.Page.scroll();
+                });
+                setTimeout(function(){
+                    that.Mouse.init();
+                },50);
+            }
+            return flag;
+        },
+        initFail: function(res){
+            var that = this;
+            that.exception(res);
+            that.Flag.initStatus = 'FAIL';
+            that.fn.initStatus('FAIL');
+        },
+        /**
+         * 预览更多
+         * @param Page._current:当前页;Page._actual:文档实际总页数;Page._counts: 可预览页数;
+         * @method Page.fix()修改文档实际页数;
+         * @method Page.prev(map, proto);
+         * @method Page.next(map, proto);
+         * @method Page.jump(map, proto);
+         * @method Page.last(map, proto);
+         * @method Page.scroll(map, proto);
+         * @for WebPreview
+         **/
+        remain: function(jump_page){
+            var that = this,
+            for_start_page = 0, //分页for循环 起始段；
+			for_zone_page = 0,//分页for循环 区间长度段；
+			for_end_page = 0, //分页for循环 结束段；
+			for_size_page = that.Base.sections ? that.Base.page.zone * that.Base.sections : that.Data.preview_page, //分页for循环 每个分段区间多少页；
+			for_remain_page = 0, //预览剩余多少页
+            for_jump_page = 0; //默认跳转至页数
+            jump_page = jump_page || 0;
+            if( that.Data.remain_page == 0 ){
+                that.fn.remainStatus('NULL');
+                return false;
+            }
+            for_start_page = that.Data.preview_page - that.Data.remain_page;
+            for_start_page = for_start_page == that.Base.page.init ? for_start_page + 1: for_start_page;
+            if( jump_page > for_start_page + for_size_page ){
+                var a = jump_page - for_start_page,
+                    b = a % that.Base.page.zone > 0 ? 1 : 0,
+                    c = parseInt( a / that.Base.page.zone ) + b;
+                for_size_page = c * that.Base.page.zone;
+            }
+            for_remain_page = for_start_page == that.Base.page.zone ? that.Data.remain_page - 1 : that.Data.remain_page;
+            for_zone_page = that.Data.remain_page > for_size_page ? for_size_page : for_remain_page;
+            for_end_page = for_start_page + for_zone_page;
+            for_end_page = for_end_page > that.Data.preview_page ? that.Data.preview_page : for_end_page;
+            for_jump_page = for_start_page == that.Base.page.zone ? for_start_page : for_start_page + 1;
+            for( var i = for_start_page; i <= for_end_page; i++ ){
+                that.Image.append(i);
+                if( typeof that.Data.images[i] == 'undefined' ){
+                    that.Data.images[i] = { status: 'init',src: '',times: 0 };
+                }else{
+                    that.Image.remain(i);
+                }
+            }
+            that.Data.remain_page = that.Data.preview_page - for_end_page;
+            that.request( for_start_page + 1 );
+            that.requestTimer();
+            if( !that.Base.remain ){
+                that.Page.jump( jump_page || for_jump_page );
+            }
+            that.fn.remainStatus('SUCCESS');
+        },
+        /**
+         * 请求获取页数
+         * @grammar
+         * @param Page._current:当前页;Page._actual:文档实际总页数;Page._counts: 可预览页数;
+         * @for WebPreview
+         **/
+        request: function(page){
+            var that = this,
+                clearTimer = function(){
+                    clearInterval(that.Timers.request);
+                    that.Timers.request = 0;
+                };
+            if( page > 0 ){
+                $.ajax({
+                    url: that.Util.getAjaxUrl(page),
+                    dataType: 'JSONP',
+                    success: function (res) {
+                        if( res.status == 200 ){
+                            if( $.isEmptyObject(res.data) ){
+                                clearTimer();
+                                return false;
+                            }
+                            that.Page.fix( res.pages );
+                            that.Image.status( res.data );
+                        }else{
+                            clearTimer();
+                            that.exception(res);
+                        }
+                    },
+                    error: function () {
+                        clearTimer();
+                    }
+                });
+            }else{
+                clearTimer();
+            }
+        },
+        /**
+         * 定时器请求获取页数
+         * @grammar
+         * @param image: 获取当前页对象;
+         * @condition 如果当前页的状态为fail，且次数小于超限，则继续请求当前页
+         * @condition 轮循其他页是否需要继续请求，
+         * @for WebPreview
+         **/
+        requestTimer: function(){
+            var that = this;
+            if( that.Timers.request > 0 ){
+                return false;
+            }
+            that.Timers.request = setInterval(function () {
+                var image = that.Data.images[that.Data.current_page];
+                if( ['init','fail'].indexOf( image.status ) > -1 && image.times < that.Base.times){
+                    that.request( that.Data.current_page );
+                    return false;
+                }
+                var _next_page = that.getNextPage();
+                if( _next_page > 0 ){
+                    that.request( _next_page );
+                    return false;
+                }else{
+                    clearInterval(that.Timers.request);
+                    that.Timers.request = 0;
+                }
+            },that.Base.timeout);
+        },
+        /**
+         * 获取相邻页，且之前浏览过的，未加载的页，
+         * @grammar
+         * @param image: 获取当前页对象;
+         * @condition 如果当前页的状态为fail，且次数小于超限，则返回当前页
+         * @for WebPreview
+         **/
+        getNextPage: function(){
+            var that = this,
+                image = {},
+                next_page = 0;
+            for( var i = 1 ; i < that.Data.preview_page; i++ ){
+                next_page = that.Data.current_page + i;
+                if( next_page <= that.Data.preview_page ){
+                    image = that.Data.images[next_page];
+                    if( typeof image != 'undefined' && that.Data.scroll_pages.indexOf(next_page) != -1 && image.status == 'fail' && image.times < that.Base.times ){
+                        return next_page;
+                    }
+                }
+                next_page = that.Data.current_page - i;
+                if( next_page >= 1 ){
+                    image = that.Data.images[next_page];
+                    if( typeof image != 'undefined' && that.Data.scroll_pages.indexOf(next_page) != -1 && image.status == 'fail' && image.times < that.Base.times ){
+                        return next_page;
+                    }
+                }
+            }
+            return 0;
+        },
+        /**
+         * 分页控制
+         * @grammar
+         * @method Page.fix(pages) 修改文档实际页数;
+         * @method Page.prev() 跳转上一页;
+         * @method Page.next() 跳转下一页;
+         * @method Page.jump(page) 跳转至多少页;
+         * @method Page.getLast() 通过cookie获取上一次阅读多少页;
+         * @method Page.setLast() 当前页数更改后设置cookie页;
+         * @method Page.scroll(map, proto);
+         * @for WebPreview
+         **/
+        Page: {
+            fix: function (pages) {
+                var that = WebPreview,
+                    remain_page = that.Data.remain_page,
+                    actual_page = parseInt( pages.actual ),
+                    preview_page = parseInt( pages.preview ),
+                    preview_page_continue = that.Data.preview_page + 1,
+                    $item = {};
+                if( actual_page != that.Data.actual_page){
+                    that.Data.actual_page = actual_page;
+                    that.fn.actualFix( actual_page );
+                }
+                if( preview_page != that.Data.preview_page ){
+                    /**
+                     * 当ajax返回预览页数小于初始化预览页数
+                     * @method 把多余的image删除，修复剩余页数
+                     * 当ajax返回预览页数大于初始化预览页数
+                     * @method 需要判断是否已经加载剩余页，如果已加载还需要补全剩余页
+                     * **/
+                    if( preview_page < that.Data.preview_page ){
+                        for ( var i = preview_page + 1; i <= that.Data.preview_page; i++ ){
+                            $item = $(that.Base.pick).find('[data-id="' + i + '"]');
+                            $item.next('.split').remove();
+                            $item.remove();
+                            delete that.Data.images[i];
+                            that.Util.arrayRemove(that.Data.scroll_pages,i);
+                        }
+                    }else{
+                        if( remain_page == 0 && that.Flag.initStatus == 'SUCCESS'){
+                            for ( var i = preview_page_continue; i <= preview_page; i++ ){
+                                that.Image.append(i);
+                                if( typeof that.Data.images[i] == 'undefined' ){
+                                    that.Data.images[i] = { status: 'init',src: '',times: 0 };
+                                }
+                            }
+                            that.requestTimer();
+                        }
+                    }
+                    that.Data.preview_page = preview_page;
+                    that.fn.previewFix( preview_page );
+                    if( remain_page > 0 ){
+                        remain_page = preview_page - that.Base.page.init;
+                        remain_page = remain_page > 0 ? remain_page : 0;
+                    }else{
+                        that.Page.jump( preview_page_continue );
+                    }
+                    that.Data.remain_page = remain_page;
+                    that.fn.remainFix( remain_page );
+                }
+            },
+            prev: function () {
+                var that = this;
+                if( WebPreview.Data.current_page > 1 ){
+                    that.jump(WebPreview.Data.current_page - 1);
+                }
+            },
+            next: function () {
+                var that = this;
+                if( WebPreview.Data.current_page < WebPreview.Data.preview_page ){
+                    that.jump( WebPreview.Data.current_page + 1 );
+                }
+            },
+            current: function ( page ){
+                var that = this,
+                    _WebPreview = WebPreview,
+                    next_zone_page = page + _WebPreview.Base.page.zone;
+                _WebPreview.Data.current_page = page;
+                _WebPreview.Image.lazy( page );
+                that.setLast();
+                if( _WebPreview.Data.scroll_pages.indexOf( page ) == -1 ){
+                    _WebPreview.Data.scroll_pages.push( page );
+                }
+                if( next_zone_page <= _WebPreview.Data.preview_page  && _WebPreview.Data.scroll_pages.indexOf( next_zone_page ) == -1 ){
+                    _WebPreview.Data.scroll_pages.push (next_zone_page );
+                }
+                if( page > _WebPreview.Timestamps.page && _WebPreview.Util.isShow( $(_WebPreview.Base.pick) ) ){
+                    _WebPreview.Timestamps.page = page;
+                }
+                _WebPreview.fn.currentChange( page );
+                _WebPreview.requestTimer();
+            },
+            jump: function ( page ) {
+                var that = this,
+                    _WebPreview = WebPreview,
+                    scrollTop = 0;
+                _WebPreview.Flag.isJump = true;
+                page = parseInt(page);
+                page = page >= 1 ? page : 1;
+                page = page <= _WebPreview.Data.preview_page ? page : _WebPreview.Data.preview_page;
+                if( _WebPreview.Data.remain_page > 0 && page > _WebPreview.Data.preview_page - _WebPreview.Data.remain_page ){
+                    _WebPreview.remain(page);
+                }else{
+                    setTimeout(function () {
+                        page = $(_WebPreview.Base.pick).find('[data-id="'+ page +'"]').length ? page : $(_WebPreview.Base.pick).find('.webpreview-item').length;
+                        if( page ){
+                            scrollTop = $(_WebPreview.Base.pick).find('[data-id="'+ page +'"]').offset().top;
+                            $('html,body').animate({ scrollTop: scrollTop },150,'swing',function () {
+                                //防止滚动事件未停止
+                                setTimeout(function () {
+                                    _WebPreview.Flag.isJump = false;
+                                },200);
+                            });
+                            that.current( page );
+                        }
+                    },500);
+                }
+            },
+            getLast: function () {
+                var that = WebPreview,
+                    last_page = 0,
+                    v = that.Base.data.aid + '_',
+                    pages = that.Util.getCookie('PREVIEWHISTORYPAGES'),
+                    pages_arr = [],
+                    v_arr = [];
+                if( pages ){
+                    pages_arr = pages.split(',');
+                    for( var i = 0; i < pages_arr.length; i++ ){
+                        if( pages_arr[i].indexOf(v) != -1 ){
+                            v_arr = pages_arr[i].split('_');
+                            last_page = parseInt(v_arr[1]);
+                        }
+                    }
+                }
+                if( last_page > that.Base.page.init ){
+                    that.Util.layer.open({
+                        type: 1,
+                        time: 6000,
+                        area: ['320px','212px'],
+                        title: '继续上次预览',
+                        content: '<div class="webpreview-last">'+
+                            '<h2>上次预览到'+ last_page +'页，是否继续上次预览？</h2>'+
+                            '<div class="btns"><button type="button" class="btn-sub" id="webpreview_last_sub">继续上次预览</button><button type="button" class="btn-cel" id="webpreview_last_cel">取消</button> </div>',
+                        success: function () {
+                            $('#webpreview_last_sub').on('click',function () {
+                                that.Page.jump(last_page);
+                                that.Util.layer.close();
+                            });
+                            $('#webpreview_last_cel').on('click',function () {
+                                that.Util.layer.close();
+                            });
+                        }
+                    });
+                }
+            },
+            setLast: function(){
+                var that = WebPreview,
+                    is_exist = false,
+                    v = that.Base.data.aid + '_',
+                    pages = that.Util.getCookie('PREVIEWHISTORYPAGES'),
+                    pages_arr = [];
+                if( pages ){
+                    pages_arr = pages.split(',');
+                    for( var i = 0; i < pages_arr.length; i++ ){
+                        if( pages_arr[i].indexOf(v) != -1 ){
+                            is_exist = true;
+                            pages_arr[i] = v + that.Data.current_page;
+                            break;
+                        }
+                    }
+                    if( !is_exist ){
+                        pages_arr.unshift( v + that.Data.current_page );
+                    }
+                    for ( var i = 50; i < pages_arr.length; i++ ){
+                        if( pages_arr[i] ){
+                            pages_arr.splice(i, 1);
+                        }else{
+                            break;
+                        }
+                    }
+                    that.Util.setCookie('PREVIEWHISTORYPAGES',pages_arr.join(','));
+                }else{
+                    that.Util.setCookie('PREVIEWHISTORYPAGES',v + that.Data.current_page);
+                }
+            },
+            scroll: function () {
+                var that = WebPreview;
+                clearTimeout(d);
+                var d = setTimeout(function(){
+                    if( that.Flag.initStatus == 'SUCCESS' && that.Util.isShow( $(that.Base.pick) )){
+                        that.Timestamps.scroll = new Date().getTime() - 300;
+                    }
+                },300);
+                if( that.Flag.isJump ){
+                    return false;
+                }
+                var window_pages = [],
+                    scrollTop = $(window).scrollTop(),
+                    differ = scrollTop - that.Flag.scrollTop,
+                    direction = differ > 0 ? 1: 0,
+                    current_page = 0;
+                if( Math.abs(differ) < that.Flag.scrollInterval ){
+                    return false;
+                }
+                that.Flag.scrollTop = scrollTop;
+                /**
+                 * 获取当前页，遍历所有页，并计算每一页是否在可视窗体内
+                 * */
+                $(that.Base.pick).find('.webpreview-item').each(function(){
+                    var offset_top = $(this).offset().top,
+                        outer_height = $(this).outerHeight(true),
+                        scroll_top = $(window).scrollTop(),
+                        window_height = $(window).height();
+                    if(  scroll_top <= offset_top + outer_height && scroll_top >= offset_top - window_height ){
+                        window_pages.push( parseInt($(this).attr('data-id')) );
+                    }
+                });
+                switch (window_pages.length) {
+                    case 1:
+                        current_page = window_pages[0];
+                        break;
+                    case 2:
+                        current_page = window_pages[direction];
+                        break;
+                    case 3:
+                        current_page = window_pages[1];
+                        break;
+                }
+                if( current_page > 0 && current_page != that.Data.current_page ){
+                    that.Page.current(current_page);
+                }
+            }
+        },
+        Util: {
+            js: function(_src, callback){
+                var _v = '',
+                    _script = document.createElement("script");
+                if( _src.indexOf('?v=') != -1 ){
+                    var arr = _src.split('?v=');
+                    _src = arr[0];
+                    _v = arr[1];
+                }
+                _script.type = "text/javascript";
+                _script.src = _src + '?v=' + WebPreview.version + _v;
+                document.getElementsByTagName('head')[0].appendChild(_script);
+                if (!/*@cc_on!@*/0) {
+                    _script.onload = function () {
+                        callback && callback();
+                    }
+                } else {
+                    _script.onreadystatechange = function () {
+                        if (_script.readyState == 'loaded' || _script.readyState == 'complete') {
+                            callback && callback();
+                        }
+                    }
+                }
+            },
+            css: function(theme){
+                var cssLink = document.createElement('link');
+                cssLink.rel = 'stylesheet';
+                cssLink.type = 'text/css';
+                cssLink.href = PATH + 'theme/'+ theme + '/webpreview.css?v='+ WebPreview.version;
+                document.getElementsByTagName('head')[0].appendChild(cssLink);
+            },
+            zoom: function(theme){
+                var jsLink = document.createElement('script');
+                jsLink.type = 'text/javascript';
+                jsLink.src = PATH + 'theme/'+ theme + '/zoom.js?v='+ WebPreview.version;
+                document.getElementsByTagName('head')[0].appendChild(jsLink);
+            },
+            fastClick:function(theme){
+                var jsLink = document.createElement('script');
+                jsLink.type = 'text/javascript';
+                jsLink.src = PATH + 'theme/'+ theme + '/fastClick.js';
+                document.getElementsByTagName('head')[0].appendChild(jsLink);
+            },
+            getAjaxUrl: function(page){
+                var that = WebPreview,
+                    url = that.Base.host + '/getPreview.html?';
+                that.Base.data.page = page;
+                for( var i in that.Base.data ){
+                    url += '&' + i + '=' +  that.Base.data[i];
+                }
+                return url;
+            },
+            getCookie: function(name,_return){
+                var nameEQ = name + "=",
+                    ca = document.cookie.split(';'),
+                    i,
+                    c;
+                for(i = 0;i < ca.length;i++) {
+                    c = ca[i];
+                    while ( c.charAt(0 )== ' ' ) c = c.substring(1,c.length);
+                    if ( c.indexOf(nameEQ) == 0 ) return c.substring(nameEQ.length,c.length);
+                }
+                return typeof _return != 'undefined' ? _return : false;
+            },
+            setCookie: function(name,val){
+                var date = new Date(),
+                    expires = '',
+                    hours = date.getTimezoneOffset() / 60,
+                    time = 30 * ( 24 - hours ) * 60 * 60 * 1000 ; //30天
+                date.setTime( date.getTime() + time );
+                expires ="; expires = " + date.toUTCString();
+                document.cookie = name + "=" + val + expires + "; path=/";
+            },
+            arrayRemove: function(_array,v){
+                if ( typeof _array != 'undefined' && _array.length > 0 ){
+                    var index = _array.indexOf(v);
+                    if (index > -1) {
+                        _array.splice(index, 1);
+                    }
+                }
+            },
+            debounce: function (fn,wait) {
+                var timeout = null;
+                return function() {
+                    if(timeout !== null) clearTimeout(timeout);
+                    timeout = setTimeout(function(){
+                        fn();
+                    }, wait);
+                }
+            },
+            layer: {
+                _opts: { type: 1, title: null },
+                getZIndex: function(){
+                    var _z = Math.max.apply(null,
+                        $.map($('body *'), function(e,n) {
+                            if ($(e).css('position') != 'static')
+                                return parseInt($(e).css('z-index')) || -1;
+                        })
+                    );
+                    return _z + 9;
+                },
+                open: function (options) {
+                    var that = this,
+                        _content = '',
+                        _style = '',
+                        _z_index = that.getZIndex(),
+                        cssFun = function(){
+                            var $dialog = $('.webpreview-layer-dialog'),
+                                _w = $dialog.outerWidth(),
+                                _h = $dialog.outerHeight(),
+                                $frame = $('#webpreview_layer_frame');
+                            $dialog.css({ marginLeft: '-' + parseInt( _w / 2 ) + 'px', marginTop: '-' + parseInt( _h / 2 ) + 'px' });
+                            if( $frame.length > 0 ){
+                                $frame.css( 'height', $('.webpreview-layer-dialog').outerHeight() - $('.webpreview-layer-title').outerHeight() );
+                            }
+                        },
+                        skin = '';
+                    that._opts = $.extend({},that._opts,options);
+                    switch (that._opts.type) {
+                        case 1:
+                            _content = options.content;
+                            break;
+                        case 2:
+                            _content = '<iframe scrolling="auto" allowtransparency="true" id="webpreview_layer_frame" class="webpreview-layer-frame" width="100%" height="100%" frameborder="0" src="'+options.content+'"></iframe>';
+                            break;
+                    }
+                    if( typeof that._opts.area != 'undefined' ){
+                        if( $.isArray(that._opts.area) ){
+                            _style = 'width: ' + that._opts.area[0] + ';height: '+ that._opts.area[1];
+                        }else{
+                            _style = 'width: ' + that._opts.area + ';height: auto';
+                        }
+                    }
+                    skin = typeof that._opts.skin != 'undefined' ? ' ' + that._opts.skin: '';
+                    $('body').append('<div class="webpreview-layer-shade" id="webpreview_layer_shade" style="z-index: '+_z_index+'"></div><div id="webpreview_layer" class="webpreview-layer-dialog'+skin+'" style="z-index: '+ ( _z_index + 1) +';' +_style+'"><div class="webpreview-layer-title"><strong>'+options.title+'</strong><span class="webpreview-layer-close"></span></div><div class="webpreview-layer-content">'+_content+'</div></div>');
+                    setTimeout(function(){
+                        cssFun();
+                        $(window).resize(function () {
+                            cssFun();
+                        });
+                    },50);
+                    if( $.isFunction( options.success ) ){
+                        options.success();
+                    }
+                    $('#webpreview_layer .webpreview-layer-close').on('click',function () {
+                        that.close();
+                    });
+                },
+                msg: function(message,callback){
+                    var that = this,
+                        _z_index = that.getZIndex();
+                    $('body').append('<div class="webpreview-layer-msg" style="z-index: '+_z_index+'">'+message+'</div>');
+                    setTimeout(function(){
+                        var $msg = $('.webpreview-layer-msg'),
+                            _w = $msg.outerWidth();
+                        $msg.css({ display: 'block',marginLeft: '-' + parseInt( _w / 2 ) + 'px'});
+                        setTimeout(function () {
+                            $msg.remove();
+                            if( $.isFunction( callback ) ){
+                                callback();
+                            }
+                        },1500);
+                    },50);
+                },
+                close: function () {
+                    var that = this;
+                    $('#webpreview_layer').remove();
+                    $('#webpreview_layer_shade').remove();
+                    if( $.isFunction( that._opts.end ) ){
+                        that._opts.end();
+                    }
+                }
+            },
+            isShow: function($el) {
+                var scroll_top = $(window).scrollTop(),
+                    window_height = $(window).height(),
+                    offset_top = $el.offset().top,
+                    height = $el.height();
+                return $el.is(':visible') && scroll_top <= offset_top + height && scroll_top >= offset_top - window_height;
+            },
+            isAppleWebKit:function(){
+                var u = navigator.userAgent,
+                    ios = !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/),//是否ios终端
+                    webKit = u.indexOf('AppleWebKit') !== -1;// 苹果、谷歌内核
+                return ios && webKit;
+            }
+        },
+        Owa: {
+            init: function(){
+                var that = this;
+                if( WebPreview.Base.owa && owa ){
+                    that.bind();
+                }
+            },
+            bind: function(){
+                $(window).bind('beforeunload',function(){
+                    var load = WebPreview.Timestamps.success && WebPreview.Timestamps.create ? WebPreview.Timestamps.success - WebPreview.Timestamps.create : 0,
+                        stay = new Date().getTime() - WebPreview.Timestamps.create,
+                        read = WebPreview.Timestamps.scroll && WebPreview.Timestamps.success ? WebPreview.Timestamps.scroll - WebPreview.Timestamps.success : 0;
+                    owa.push(['setGlobalEventProperty','webpreview_aid',WebPreview.Base.data.aid]);
+                    owa.push(['setGlobalEventProperty','webpreview_load_ms', load]);
+                    owa.push(['setGlobalEventProperty','webpreview_stay_ms', stay]);
+                    owa.push(['setGlobalEventProperty','webpreview_read_ms', read]);
+                    owa.push(['setGlobalEventProperty','webpreview_page_ms', WebPreview.Timestamps.page]);
+                    owa.push(['setGlobalEventProperty','webpreview_theme', WebPreview.Base.theme]);
+                    owa.push(['trackAction','beforeunload', 'webpreview']);
+                });
+            }
+        },
+        /**
+         * 对业务方提供回调事件绑定
+         * @for WebPreview
+         */
+        fn: {
+            initStatus: function(){},
+            remainStatus: function(){},
+            actualFix: function(){},
+            previewFix: function(){},
+            remainFix: function(){},
+            currentChange: function(){}
+        },
+        /**
+         * 预览反馈
+         * @grammar Feedback.init(); 弹窗反馈表单并初始化表单
+         * @grammar  Feedback.sub(); 表单提交
+         * @for WebPreview
+         */
+        Feedback:{
+            init: function () {
+                var that = this;
+                WebPreview.Util.layer.open({
+                    type: 1,
+                    skin: 'webpreview-layer-feedback',
+                    title: '预览反馈',
+                    area: ['450px','380px'],
+                    content: '<div class="webpreview-feedback">'+
+                        '<dl><dt>备注说明<small> (选填) </small>:</dt><dd><textarea id="feedback_remark" placeholder="请输入不可预览的详细描述"></textarea> </dd></dl>'+
+                        '<dl><dt>联系方式<small> (选填) </small>:</dt><dd><input type="text" id="feedback_contact" placeholder="请输入您的联系方式"> </dd></dl>'+
+                        '<p>将预览失败的情况反馈给我们，将有助于问题的解决，谢谢您对本站的帮助和支持！</p>'+
+                        '<div class="btns"><button type="button" class="btn-sub" id="webpreview_feedback_sub">提交</button> </div>'+
+                        '</div>',
+                    success: function () {
+                        $('#webpreview_feedback_sub').on('click',function(){
+                            that.sub();
+                        });
+                    }
+                });
+            },
+            sub: function () {
+                var that = WebPreview,
+                    $btn = $('#webpreview_feedback_sub'),
+                    _remark = $('#feedback_remark').val(),
+                    _contact = $('#feedback_contact').val(),
+                    _data = { doc_id: that.Base.data.aid,project_id: that.Base.data.project_id ,contact: _contact , remark: _remark };
+                $.ajax({
+                    url: that.Base.host + '/viewFeedback.html',
+                    data: _data,
+                    type: 'GET',
+                    dataType: 'JSONP',
+                    beforeSend: function(){
+                        $btn.attr('disabled',true).text('提交中...');
+                    },
+                    success: function (res) {
+                        if( res.status == '200' ){
+                            that.Util.layer.msg('提交成功！',function () {
+                                that.Util.layer.close();
+                            });
+                        }else{
+                            $btn.attr('disabled',false).text('提交');
+                            that.Util.layer.msg(res.message);
+                        }
+                    }
+                });
+            }
+        },
+        Mouse: {
+            init: function(){
+                var that = this;
+                that.grab();
+            },
+            grab: function () {
+                var _mouse_timer = 0,
+                    $item = {},
+                    _x = 0,
+                    _y = 0,
+                    _change_y = 0,
+                    _change_x = 0,
+                    _scroll_left = 0,
+                    _scroll_top = 0;
+                $(WebPreview.Base.pick).mousedown(function(e){
+                    _x = e.pageX;
+                    _y = e.pageY;
+                    $(document).mousemove(function(e) {
+                        $item = $(e.target).parent();
+                        _change_x = e.pageX - _x;
+                        _change_x = Math.ceil(_change_x * 0.12);
+                        _change_y = e.pageY - _y;
+                        if( _mouse_timer ){
+                            clearTimeout(_mouse_timer);
+                            _mouse_timer = 0;
+                        }
+                        _mouse_timer = setTimeout(function () {
+                            if( $item.attr('data-scroll') == 'x' && Math.abs(_change_x) > Math.abs(_change_y) && Math.abs(_change_y) <= 15 ){
+                                _scroll_left = $item.scrollLeft() - _change_x * 0.4;
+                                $item.scrollLeft(_scroll_left);
+                            }else{
+                                _scroll_top = $(window).scrollTop() - _change_y;
+                                $(window).scrollTop(_scroll_top);
+                            }
+                        },2);
+                    });
+                    $(this).mouseup(function(){
+                        $(document).off('mousemove');
+                        clearTimeout(_mouse_timer);
+                        _mouse_timer = 0;
+                    });
+                    $(this).mouseout(function(){
+                        $(document).off('mousemove');
+                        clearTimeout(_mouse_timer);
+                        _mouse_timer = 0;
+                    });
+                });
+            }
+        },
+        /**
+         * 切换预览通道
+         * @grammar Preview.register(map, proto);
+         * @param  type: 2 采用iframe模式
+         * @param  title: 文档标题
+         * @param  area: 宽、高
+         * @param  url: 预览地址
+         * @for WebPreview
+         */
+        channel: function(title,url){
+            var that = this;
+            that.Util.layer.open({
+                type: 2,
+                title: title,
+                area: ['92%','95%'],
+                content: url
+            });
+        },
+        /**
+         * 对业务方提供回调（事件）
+         * @grammar Preview.on(proto) 事件监听列表;
+         * @grammar Preview.on('initStatus') 初始化结束返回;
+         * @grammar Preview.on('remainStatus') 剩余请求结束返回;
+         * @grammar Preview.on('actualFix') 修复真实页数;
+         * @grammar Preview.on('remainFix') 剩余也页数;
+         * @grammar Preview.on('currentChange') 当前页数修改;
+         * @for WebPreview
+         */
+        Preview : {
+            on: function (type,callback) {
+                var fn = WebPreview.fn;
+                switch (type) {
+                    case 'initStatus':
+                        fn.initStatus = callback;
+                        break;
+                    case 'remainStatus':
+                        fn.remainStatus = callback;
+                        break;
+                    case 'actualFix':
+                        fn.actualFix = callback;
+                        break;
+                    case 'previewFix':
+                        fn.previewFix = callback;
+                        break;
+                    case 'remainFix':
+                        fn.remainFix = callback;
+                        break;
+                    case 'currentChange':
+                        fn.currentChange = callback;
+                        break;
+                }
+            },
+            remain: function(){
+                WebPreview.remain();
+            },
+            prev: function(){
+                WebPreview.Page.prev();
+            },
+            jump: function(page){
+                WebPreview.Page.jump(page);
+            },
+            next: function(){
+                WebPreview.Page.next();
+            },
+            request: function (view_token) {
+                if( typeof view_token != 'undefined' ){
+                    var that = WebPreview,
+                        _page = that.Data.preview_page + 1;
+                    that.Base.data.view_token = view_token;
+                    that.request(_page);
+                    return true;
+                }else{
+                    return false;
+                }
+            },
+            getPage: function () {
+                return {
+                    current: WebPreview.Data.current_page,
+                    actual: WebPreview.Data.actual_page,
+                    preview: WebPreview.Data.preview_page,
+                    remain: WebPreview.Data.remain_page
+                };
+            }
+        },
+        version: '2021.03.10'
+    };
+})(window,jQuery,function () {
+    /**
+     * 获取当前js文档的目录
+     * @param current_path 当前所在目录
+     * @匿名函数 自动加载
+     * @return PATH
+     * **/
+    var current_path = document.currentScript ? document.currentScript.src : function(){
+        var js = document.scripts,
+            last = js.length - 1,
+            src = null;
+        for(var i = last; i > 0; i--){
+            if( js[i].readyState === 'interactive'){
+                src = js[i].src;
+                break;
+            }
+        }
+        return src || js[last].src;
+    }();
+    return current_path.substring(0, current_path.lastIndexOf('/') + 1);
+}());

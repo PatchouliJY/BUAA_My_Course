@@ -1,0 +1,572 @@
+
+var PREVIEW_PAGE = { 
+        actual: base.detail.preview.pic.actual_page, 
+        preview: base.detail.preview.pic.preview_page
+    },
+    PREVIEW_THEME = 'default',
+    PREVIEW_ONLYREAD = '',
+    PREVIEW_MARK_FLAG = 1,
+    PREVIEW_TEST_CONVERSION_READPAGE = parseInt('0'), //限定页数
+    PREVIEW_DATA = { 
+        project_id: 1, //1:max站
+        aid: base.detail.preview.pic.aid,
+        t: base.detail.senddate,
+        view_token: base.detail.preview.pic.view_token
+    };
+var preview = WebPreview.create({
+        pick: '.preview-bd',
+        actual: PREVIEW_PAGE.actual,
+        preview: PREVIEW_PAGE.preview,
+        data: PREVIEW_DATA,
+        theme: PREVIEW_THEME,
+        remain: false,
+        sections: 3,
+        owa: true
+    });
+preview.on('initStatus',function (status) {
+    if ( status === 'SUCCESS' ) {
+        switch(base.spider){
+            case 0:
+                hd.init();
+                bar.init();
+                ft.init();
+                // re.init(1);
+                break;
+            case 1:
+                ft.init();
+                break;
+        }
+    }
+});
+preview.on('remainStatus',function (status) {
+    switch (status) {
+        case 'SUCCESS':
+            // re.plus();
+            ft.remain();
+            break;
+        case 'ERROR':
+            break;
+    }
+});
+preview.on('actualFix',function () {
+    bar.page();
+});
+preview.on('previewFix',function () {
+    bar.current();
+    // re.plus(); //默认只有1页的时候，如果修复页数了 再去执行添加推荐块
+});
+preview.on('remainFix',function () {
+    ft.remain();
+    // re.plus();
+    qr.init();
+});
+preview.on('currentChange',function () {
+    bar.current();
+});
+preview.change = function(){
+    var that = this,
+        _PAGE = that.getPage();
+    if( _PAGE.remain > 0 ){
+        WebPreview.Base.data.view_token = base.detail.preview.pic.view_token;
+        WebPreview.request(1);
+    }else{
+        that.request(base.detail.preview.pic.view_token);
+    }
+};
+var hd = {
+    $hd: $('.preview-hd'),
+    init: function(){
+        $('#hd_close').on('click',function(){
+            bar.setZoom('normal');
+        });
+    },
+    show: function(){
+        var that = this;
+        that.$hd.css('display','block');
+    },
+    hide: function(){
+        var that = this;
+        that.$hd.css('display','none');
+    }
+};
+var bar = {
+    $preview: $('.preview'),
+    $bar: $('.preview-bar'),
+    $page: $('.preview-bar ul.page'),
+    data: {
+        zoom: 'normal'
+    },
+    init: function () {
+        var that = this,
+            _PAGE = preview.getPage();
+        that.$page.html('<li><a data-owa="preview_pic_prev" class="prev" href="javascript:;" title="上一页"><i class="icon-detail">&#xe6aa;</i></a></li>'+
+                        '<li><input class="number" type="text" value="1"> <span class="counts"> / '+_PAGE.actual+' </span></li>'+
+                        '<li><a data-owa="preview_pic_next" class="next" href="javascript:;" title="下一页"><i class="icon-detail">&#xe6a9;</i></a></li>'+
+                        '<li><a data-owa="preview_pic_big" class="zoom zoom-big" data-zoom="big" href="javascript:;" title="放大"><i class="icon-detail">&#xe6c3;</i></a></li>'+
+                        '<li><a data-owa="preview_pic_normal" class="zoom zoom-normal disabled" data-zoom="normal" href="javascript:;" title="缩小"><i class="icon-detail">&#xe6c4;</i></a></li>'+
+                        '<li><a data-owa="preview_pic_full" class="zoom zoom-full" data-zoom="full" href="javascript:;" title="全屏"><i class="icon-detail">&#xe6ac;</i></a></li>');
+        $(window).scroll(function() {
+            that.fixed();
+        });
+        that.fixed();
+        that.prev();
+        that.jump();
+        that.next();
+        that.zoom();
+        that.enter();
+        that.current();
+        that.page();
+        owa.btn( that.$page.find('[data-owa]') );
+    },
+    fixed: function(){
+        var that = this;
+        if( $(window).scrollTop() + $(window).height() >= that.$preview.offset().top + that.$preview.height() && that.data.zoom != 'full' ){
+            that.$bar.removeClass('fixed');
+        }else{
+            if( $(window).scrollTop() > 100 ){
+                that.$bar.addClass('fixed');
+            }else{
+                that.$bar.removeClass('fixed');
+            }
+        }
+    },
+    page: function(){
+        var that = this,
+            _p = 0,
+            _PAGE = preview.getPage();
+        
+        //是否BG标准文档 0 不是标准  1是标准
+        if ( +base.detail.status.stand === 1 ) {
+            _p = PREVIEW_PAGE.actual;
+        }else{
+            _p = _PAGE.actual;
+        }
+        that.$page.find('span.counts').text(' / '+ _p);
+    },
+    prev: function(){
+        var that = this;
+        that.$page.find('a.prev').on('click',function () {
+            !$(this).hasClass('disabled') && preview.prev();
+        });
+    },
+    jump: function(){
+        var that = this,
+            $number = that.$page.find('input.number');
+        $number.keyup(function () {
+            this.value = this.value.replace(/[^\d]/g, '');
+        });
+        $number.blur(function () {
+            var _PAGE = preview.getPage(),
+                _v = this.value.replace(/[^\d]/g, '');
+            _v = parseInt(_v);
+            _v = _v >= 1 ? _v : 1;
+            _v = _v > _PAGE.preview ? _PAGE.preview : _v;
+            this.value = _v;
+            preview.jump(_v);
+        });
+        $number.keydown(function () {
+            if(window.event.keyCode==13){
+                this.blur();
+            }
+        });
+    },
+    next: function(){
+        var that = this;
+        that.$page.find('a.next').on('click',function () {
+            !$(this).hasClass('disabled') && preview.next();
+        });
+    },
+    zoom: function(){
+        var that = this;
+        that.$page.find('a.zoom').on('click',function () {
+            if( !$(this).hasClass('disabled') ){
+                var _zoom = $(this).attr('data-zoom');
+                that.setZoom(_zoom);
+            }
+        });
+    },
+    setZoom: function(status){
+        var that = this,
+            _PAGE = preview.getPage();
+        that.data.zoom = status;
+        switch (status) {
+            case 'normal':
+                hd.hide();
+                $('body').removeClass('preview-zoom-big');
+                $('body').removeClass('preview-zoom-full');
+                $('#header,#header_fixed,#site,#sidebar,#footer,.detail .title,.detail .intro,.detail .tools,.detail .notice,.detail .comment,.detail .relate,.detail .interest,.side,.side-fixed').css('display','block');
+                that.$page.find('a.zoom-normal').addClass('disabled');
+                that.$page.find('a.zoom-big').removeClass('disabled');
+                that.$page.find('a.zoom-full').attr('data-zoom','full').attr('title','全屏').find('i').html('&#xe6ac;');
+                break;
+            case 'big':
+                hd.hide();
+                $('#header,#header_fixed,#site,#sidebar,#footer,.detail .title,.detail .intro,.detail .tools,.detail .notice,.detail .comment,.detail .relate,.detail .interest').css('display','block');
+                $('.side,.side-fixed').css('display','none');
+                $('body').removeClass('preview-zoom-full');
+                $('body').addClass('preview-zoom-big');
+                $('.webpreview-item').find('img').css('width','100%');
+                that.$page.find('a.zoom-normal').removeClass('disabled');
+                that.$page.find('a.zoom-big').addClass('disabled');
+                that.$page.find('a.zoom-full').attr('data-zoom','full').attr('title','全屏').find('i').html('&#xe6ac;');
+                break;
+            case 'full':
+                $('body').removeClass('preview-zoom-big');
+                $('body').addClass('preview-zoom-full');
+                hd.show();
+                $('#header,#header_fixed,#site,#sidebar,#footer,.detail .title,.detail .intro,.detail .tools,.detail .notice,.detail .comment,.detail .relate,.detail .interest,.side,.side-fixed').css('display','none');
+                that.$page.find('a.zoom-normal').removeClass('disabled');
+                that.$page.find('a.zoom-big').removeClass('disabled');
+                $('.webpreview-item').find('img').css('width','100%');
+                that.$page.find('a.zoom-full').attr('data-zoom','normal').attr('title','退出全屏').find('i').html('&#xe6ab;');
+                break;
+        }
+        preview.jump(_PAGE.current);
+    },
+    enter: function(){
+        var that = this;
+        $(document).keydown(function (e) {
+            e.keyCode == 27 && that.data.zoom == 'full' && that.setZoom('normal');
+        });
+    },
+    current: function(){
+        var that = this,
+            $prev = that.$page.find('a.prev'),
+            $number = $('.preview-bar ul.page').find('input.number'),
+            $next = that.$page.find('a.next'),
+            _PAGE = preview.getPage();
+        if( _PAGE.preview == 1 ){
+            $prev.addClass('disabled');
+            $number.val(1).attr('readonly',true);
+            $next.addClass('disabled');
+        }else{
+            re.watch(_PAGE.current);
+            $number.val(_PAGE.current);
+            if( _PAGE.current == 1 ){
+                $prev.addClass('disabled');
+            }else{
+                $prev.removeClass('disabled');
+            }
+            if( _PAGE.current >= _PAGE.preview ){
+                $next.addClass('disabled');
+            }else{
+                $next.removeClass('disabled');
+            }
+        }
+    }
+};
+var ft = {
+    $ft: $('.preview-ft'),
+    init: function(){
+        var that = this,
+            _PAGE = preview.getPage(),
+            $handle = $('<div class="btns">'+
+                            '<button type="button" id="btn_preview_remain" class="btn btn-remain"><span>剩余<b>'+_PAGE.remain+'</b>页未预览'+( base.detail.preview.office.pay ? '继续免费预览' : '继续预览') +'</span> <i class="icon-detail">&#xe6c9;</i></button>'+
+                        '</div>'+
+                        ( base.detail.preview.tip.forbid ? '<div class="forbid">本文档仅供有限内容预览，不提供下载，谢谢!</div>':'' )
+                    );
+        that.$ft.html($handle).css('display','block');
+        setTimeout(function(){
+            that.bind();
+        },100);
+        that.remain();
+        that.corpus();
+    },
+    bind: function(){
+        $('#btn_preview_remain').on('click',function(){
+            preview.remain();
+        });
+        owa.btn( $('#btn_preview_remain'), 'preview_pic_remain' );
+        qr.init();
+    },
+    remain: function(){
+        var that = this,
+            _PAGE = preview.getPage(),
+            _text = '';
+        if( _PAGE.remain > 0 ){
+            _text = base.detail.preview.pic.pay ? '剩余<b>' + _PAGE.remain + '</b>页未预览，继续预览': '剩余<b>' + _PAGE.remain + '</b>页未预览，继续预览';
+            $('#btn_preview_remain span').html( _text );
+        }else{
+            that.end();
+        }
+    },
+    corpus: function() {
+        var that = this,
+            maxLen = 4,
+            t = 0,
+            renderCorpus = function(data) {
+                var _html = '<ul>';
+                for (var i = 0; i < data.length; i++) {
+                    if (i < maxLen) {
+                        _html += '<li>' +
+                                    '<a href="' + data[i].space_url + '" target="_blank" title="' + data[i].label + '的文档合集">' + data[i].label + '的文档合集</a>' +
+                                 '</li>';
+                    }
+                }
+                _html += '</ul>';
+                _html += '<i class="fix">文集</i>';
+                if(that.$ft.find('.corpus-list').length == 0) {
+                    var _phtml = '<div class="corpus-list">' + _html + '</div>';
+                    that.$ft.append(_phtml);
+                } else {
+                    that.$ft.find('.corpus-list').html(_html);
+                }
+                that.$ft.css({
+                    paddingBottom: 0
+                });
+            };
+        t = setInterval(function() {
+            if(detail_corpus && detail_corpus.status == 'COMPLETE') {
+                clearInterval(t);
+                if(detail_corpus.data.list.length > 0) {
+                    renderCorpus(detail_corpus.data.list);
+                }
+            }
+        }, 300);
+    },
+    end: function () {
+        var that = this,
+            _PAGE = preview.getPage(),
+            _REMAIN = _PAGE.actual - _PAGE.preview,
+            _end_tip = '',
+            _end_remain = _PAGE.actual - _PAGE.preview;
+        that.$ft.find('#btn_preview_remain').remove();
+        if( base.detail.preview.pic.pay && _REMAIN ){
+            _end_tip = '免费试读已结束，剩余<b>' + _REMAIN + '</b>页请付费预览';
+            switch( base.detail.status.download ){
+                case 3:
+                    _end_tip += '或下载文档';
+                break;
+            }
+            if( that.$ft.find('.read_and_download').length ){
+                that.$ft.find('.read_and_download').prepend('<button type="button" id="btn_preview_read" class="btn btn-read">付费继续预览</button>');
+            }else{
+                that.$ft.find('.btns').append('<div class="read_and_download"><button type="button" id="btn_preview_read" class="btn btn-read">付费继续预览</button></div>');
+            }
+            that.$ft.find('#btn_preview_read').on('click',function(){
+                operate_read.init();
+            });
+            owa.btn( $('#btn_preview_read'), 'preview_pic_read' );
+        }else{
+            switch( base.detail.status.download ){
+                case 1:
+                    _end_tip = '预览结束，剩余<strong>' + _end_remain + '</strong>页不支持预览且文档不可下载';
+                break;
+                default:
+                    //是否BG标准文档 0 不是标准  1是标准
+                    _end_tip = +base.detail.status.stand === 1 ? '请下载文档继续查看剩余部分' : '全文预览结束';
+                break;
+            }
+            that.$ft.find('#btn_preview_read').remove();
+        }
+        if( that.$ft.find('.end').length ){
+            that.$ft.find('.end').html(_end_tip);
+        }else{
+            that.$ft.prepend('<div class="end">'+_end_tip+'</div>');
+        }
+    }
+};
+var qr = {
+    init: function(){
+        preview_download.init();
+    }
+};
+var re = {
+    data: [],
+    dataTotal:0,
+    pages:{},
+    flag: {
+        i: 0,
+        c: 0
+    },
+    $bd: $('.preview-bd'),
+    init: function(page,order){
+        var that = this;
+        if(that.pages[page]){
+            return false;
+        }
+        if(that.data[order-1]){
+            that.plus(order-1,page);
+            that.pages[page]=page;
+            return false;
+        }
+        $.ajax({
+            url: base.detail.url.preview.pic.re,
+            data: {
+                aid: base.detail.aid,
+                project: PREVIEW_DATA.project_id,
+                t: PREVIEW_DATA.t,
+                order: order
+            },
+            beforeSend: function(){
+                that.pages[page]=page;
+            },
+            dataType: 'JSON',
+            success: function (res) {
+                if( res.code == 200 ){
+                    var index = order-1;
+                    that.dataTotal = res.data.total;
+                    that.setData(res.data,index);
+                    that.plus(index,page);
+                    if(page==1&&order==1){
+                        var _CURRENTPAGE = preview.getPage().current;
+                        that.watch(_CURRENTPAGE);
+                    }
+                }
+            }
+        });
+    },
+    watch:function(current_page){
+        var that = this;
+        if(!that.dataTotal){
+            re.init(1,1);
+        }else if(that.dataTotal&&current_page<=that.dataTotal){
+            re.init(current_page,current_page);
+        }else if(that.dataTotal&&current_page>that.dataTotal&&(current_page-that.dataTotal)%2==0){
+            var order = (((current_page-that.dataTotal)/2)%that.dataTotal)==0?that.dataTotal:(((current_page-that.dataTotal)/2)%that.dataTotal);
+            re.init(current_page,order);
+        }
+    },
+    setData: function(data,index){
+        var that = this;
+        data.list = data.data;
+        data.fix = data.explain;
+        that.data[index] = data;
+    },
+    /*
+    * 显示规则：固定第一页、最后一页;
+    * 显示方法：确定页数以后，判断是否已存在，页数dom是否存在，re是否存在，同时都满足方可执行re，并把数值+1
+    *
+    * */
+    plus: function (index,page) {
+        var that = this,
+            _PAGE = preview.getPage(),
+            _PAGE_PREVIEW = _PAGE.preview;
+        clearTimeout(d);
+        var d = setTimeout(function(){
+            if( that.data.length == 0 || _PAGE_PREVIEW <= 1 || that.data[index].list.length==0 || page == _PAGE_PREVIEW){
+                return false;
+            }
+            that.model(page,that.data[index].key,that.data[index]);
+        },20);
+    },
+    clear: function(){
+        var that = this;
+        if( that.data.length){
+            that.$bd.find('.webpreview-recommend').each(function(){
+                $(this).prev('.webpreview-split').remove();
+                $(this).remove();
+            });
+        }
+    },
+    model: function(page,key,data){
+        var that = this,
+            c = '<div class="webpreview-split"></div>'+
+                '<div class="webpreview-recommend re" data-re_id="'+page+'">';
+        switch(key){
+            case 'front':
+                c += '<ul class="re-front" id="re_front_'+page+'">';
+            for( var i = 0; i < data.list.length; i++ ){
+                c +=    '<li>'+
+                            '<a href="'+data.list[i].url+'" target="_blank" title="'+data.list[i].title+'">'+
+                                '<img class="lazy" src="'+ __HOME_ROOT__ + '/images/lazy/load.png" data-src="'+data.list[i].litpic+'" alt="'+data.list[i].title+'"/>'+
+                                '<span>'+data.list[i].title+'</span>'+
+                            '</a>'+
+                        '</li>';
+            }
+                c += '</ul>';
+                setTimeout(function(){
+                    util.lazyImg({
+                        parentSelector: '#re_front_'+page
+                    });
+                },1000);
+                break;
+            case 'title':
+                c += '<ul class="re-title" id="re_title_'+page+'">';
+            for( var i = 0; i < data.list.length; i++ ){
+                c +=    '<li>'+
+                            '<a href="'+data.list[i].url+'" target="_blank" title="'+ ( data.list[i].title_label || data.list[i].title ) +'">'+data.list[i].title+'</a>'+
+                        '</li>';
+            }
+                c += '</ul>';
+                break;
+            case 'tag':
+                c += '<ul class="re-tag" id="re_tag_'+page+'">';
+            for( var i = 0; i < data.list.length; i++ ){
+                c +=    '<li>'+
+                            '<a href="'+data.list[i].url+'" target="_blank" title="'+data.list[i].title+'">'+data.list[i].title+'</a>'+
+                        '</li>';
+            }
+                c += '</ul>';
+                break;
+            case 'pic':
+                c += '<ul class="re-pic" id="re_pic_'+page+'">'+
+                        '<li>'+
+                            '<a href="'+data.list.url+'" target="_blank" title="'+data.list.title+'">'+
+                                '<img class="lazy" src="'+ __HOME_ROOT__ + '/images/lazy/load.png" data-src="'+data.list.litpic+'" alt="'+data.list.title+'"/>'+
+                            '</a>'+
+                        '</li>'+
+                    '</ul>';
+                setTimeout(function(){
+                    util.lazyImg({
+                        parentSelector: '#re_pic_'+page
+                    });
+                },1000);
+                break;
+            case 'course':
+                c += '<ul class="re-course" id="re_course_' + page + '">';
+            for( var i = 0; i < data.list.length; i++ ) {
+                c +=    '<li>'+
+                            '<a href="'+data.list[i].url+'" target="_blank" title="'+data.list[i].coursetitle+'">'+
+                                '<span class="cover"><img class="lazy" src="'+ __HOME_ROOT__ + '/images/lazy/load.png" data-src="'+data.list[i].coverimage+'" alt="'+data.list[i].coursetitle+'"/></span>'+
+                                '<span class="course-title">'+data.list[i].coursetitle+'</span>'+
+                            '</a>'+
+                        '</li>';
+            }
+                c += '</ul>';
+                setTimeout(function() {
+                    if(util.getIeVersion()==7){
+                        var items = $('span.cover');
+                        items.on('click',function(){
+                            window.open($(this).parent().attr('href'),"_blank");
+                        })
+                    }
+                    util.lazyImg({
+                        parentSelector: '#re_course_' + page
+                    });
+                }, 1000);
+                break;
+                case 'shop':
+                c += '<ul class="re-shop" id="re_shop_' + page + '">';
+            for( var i = 0; i < data.list.length; i++ ) {
+                c +=    '<li>'+
+                            '<a href="'+data.list[i].url+'" target="_blank" title="'+data.list[i].title+'">'+
+                                '<span class="cover"><img class="lazy" src="'+ __HOME_ROOT__ + '/images/lazy/load.png" data-src="'+data.list[i].litpic+'" alt="'+data.list[i].title+'"/></span>'+
+                                '<span class="shop-title">'+data.list[i].title+'</span>'+
+                            '</a>'+
+                        '</li>';
+            }
+                c += '</ul>';
+                setTimeout(function() {
+                    if(util.getIeVersion()==7){
+                        var items = $('span.cover');
+                        items.on('click',function(){
+                            window.open($(this).parent().attr('href'),"_blank");
+                        })
+                    }
+                    util.lazyImg({
+                        parentSelector: '#re_shop_' + page
+                    });
+                }, 1000);
+                break;
+        }
+            c += '<i class="fix">'+data.fix+'</i>';
+            c += '</div>';
+        that.$bd.find('[data-id="' + page + '"]').after(c);
+        setTimeout(function(){
+            owa.href( $('[data-re_id='+page+']').find('a'), 'preview_re');
+            owa.btn( $('[data-re_id='+page+']').find('a'), 'preview_re_' + key);
+        },300);
+        return c;
+    }
+};

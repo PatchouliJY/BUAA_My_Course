@@ -1,0 +1,142 @@
+var util_carousel = function(options){
+    var that = this;
+    that.debounce = 0;
+    that.timer = 0;
+    that.$items = $(options.items);
+    that.$indicators = options.indicators ? $(options.indicators) : null;
+    that.$prev = options.prev ? $(options.prev) : null;
+    that.$next = options.next ? $(options.next) : null;
+    that.full = options.full || true;
+    that.auto = options.auto || true;
+    that.delay = options.delay || 3000;
+    that.anim = options.anim ? options.anim : 'default';
+    that.i = 0;
+    that.max = that.$items.length - 1;
+    that.timers = 0;
+    that.doLazy = function(){
+        var $active_item = that.$items.eq(that.i),
+        $img = $active_item.find('img');
+        $img.each(function(){
+            if($(this).hasClass('lazy') ){
+                $(this).attr('src',$(this).attr('data-src')).removeClass('lazy').addClass('lazy-success').error(function() {
+					if ($(this).hasClass('lazy-error')) {
+						return false;
+					} else {
+						$(this).removeClass('lazy-success').addClass('lazy-error');
+					}
+				});
+            }
+        })
+    };
+    that.doCarousel = function(operation){
+        if( that.timer ){
+            return;
+        }
+        that.timer = 1;
+        operation = operation ? operation : 'next';
+        if( that.anim == 'default' ){
+            var $active_item = that.$items.eq(that.i);
+            switch(operation){
+                case 'next':
+                    $active_item.animate({'left':'-100%'},600);
+                    that.i = that.i + 1;
+                    that.i = that.i > that.max ? 0 : that.i;
+                    that.$items.eq(that.i).addClass('active').css({'left':'100%'}).animate({'left':'0'},600);
+                break;
+                case 'prev':
+                    $active_item.animate({'left':'100%'},600);
+                    that.i = that.i - 1;
+                    that.i = that.i < 0 ? that.max : that.i;
+                    that.$items.eq(that.i).addClass('active').css({'left':'-100%'}).animate({'left':'0'},600);
+                break;
+                default:
+                    if( operation - that.i > 0 ){
+                        that.i = operation;
+                        $active_item.animate({'left':'-100%'},600);
+                        that.$items.eq(that.i).addClass('active').css({'left':'100%'}).animate({'left':'0'},600);
+                    }else{
+                        that.i = operation;
+                        $active_item.animate({'left':'100%'},600);
+                        that.$items.eq(that.i).addClass('active').css({'left':'-100%'}).animate({'left':'0'},600);
+                    }
+                    break;
+            }
+            setTimeout(function(){
+                that.timer = 0;
+                $active_item.removeClass('active');
+            },600);
+            that.doLazy();
+        }
+        if( that.$indicators && that.$indicators.length ){
+            that.$indicators.removeClass('active');
+            that.$indicators.eq(that.i).addClass('active');
+        }
+    };
+    //初始化执行
+    that.$items.eq(0).addClass('active');
+    that.doLazy();
+    if( that.max ){
+        if( that.auto ){
+            that.timers = setInterval(function(){
+                that.doCarousel();
+            },that.delay);
+            that.$items.parents('.carousel').hover(
+                function(){
+                    clearInterval(that.timers);
+                    that.timers = 0;
+                    that.$prev && that.$prev.length && that.$prev.fadeIn();
+                    that.$next && that.$next.length && that.$next.fadeIn();
+                },
+                function(){
+                    clearInterval(that.timers);
+                    that.timers = setInterval(function(){
+                        that.doCarousel();
+                    },that.delay);
+                    that.$prev && that.$prev.length && that.$prev.fadeOut();
+                    that.$next && that.$next.length && that.$next.fadeOut();
+                }
+            );
+        }
+    }
+    if( that.$prev && that.$prev.length ){
+        that.$prev.on('click',function(){
+            if( that.debounce ){
+                return false;
+            }
+            that.debounce = 1;
+            clearInterval(that.timers);
+            that.doCarousel('prev');
+            setTimeout(function(){
+                that.debounce = 0;
+            },100);
+        });
+    }
+    if( that.$next && that.$next.length ){
+        that.$next.on('click',function(){
+            if( that.debounce ){
+                return false;
+            }
+            that.debounce = 1;
+            clearInterval(that.timers);
+            that.doCarousel('next');
+            setTimeout(function(){
+                that.debounce = 0;
+            },100);
+        });
+    }
+    if( that.$indicators && that.$indicators.length ){
+        that.$indicators.eq(0).addClass('active');
+        that.$indicators.on('click',function(){
+            if( $(this).hasClass('active') || that.debounce){
+                return false;
+            }
+            that.debounce = 1;
+            var to = $(this).attr('data-carousel-to');
+            clearInterval(that.timers);
+            that.doCarousel(to);
+            setTimeout(function(){
+                that.debounce = 0;
+            },100);
+        });
+    }
+}

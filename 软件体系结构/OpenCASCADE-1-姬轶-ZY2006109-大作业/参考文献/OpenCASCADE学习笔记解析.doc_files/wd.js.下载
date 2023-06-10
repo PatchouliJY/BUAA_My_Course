@@ -1,0 +1,747 @@
+var split;
+split = split || function (undef) {
+    var nativeSplit = String.prototype.split,
+        compliantExecNpcg = /()??/.exec("")[1] === undef,
+        self;
+    self = function (str, separator, limit) {
+        if (Object.prototype.toString.call(separator) !== "[object RegExp]") {
+            return nativeSplit.call(str, separator, limit);
+        }
+        var output = [],
+            flags = (separator.ignoreCase ? "i" : "") +
+                (separator.multiline ? "m" : "") +
+                (separator.extended ? "x" : "") +
+                (separator.sticky ? "y" : ""),
+            lastLastIndex = 0,
+            separator = new RegExp(separator.source, flags + "g"),
+            separator2, match, lastIndex, lastLength;
+        str += "";
+        if (!compliantExecNpcg) {
+            separator2 = new RegExp("^" + separator.source + "$(?!\\s)", flags);
+        }
+        limit = limit === undef ?
+            -1 >>> 0 :
+            limit >>> 0;
+        while (match = separator.exec(str)) {
+            lastIndex = match.index + match[0].length;
+            if (lastIndex > lastLastIndex) {
+                output.push(str.slice(lastLastIndex, match.index));
+                if (!compliantExecNpcg && match.length > 1) {
+                    match[0].replace(separator2, function () {
+                        for (var i = 1; i < arguments.length - 2; i++) {
+                            if (arguments[i] === undef) {
+                                match[i] = undef;
+                            }
+                        }
+                    });
+                }
+                if (match.length > 1 && match.index < str.length) {
+                    Array.prototype.push.apply(output, match.slice(1));
+                }
+                lastLength = match[0].length;
+                lastLastIndex = lastIndex;
+                if (output.length >= limit) {
+                    break;
+                }
+            }
+            if (separator.lastIndex === match.index) {
+                separator.lastIndex++;
+            }
+        }
+        if (lastLastIndex === str.length) {
+            if (lastLength || !separator.test("")) {
+                output.push("");
+            }
+        } else {
+            output.push(str.slice(lastLastIndex));
+        }
+        return output.length > limit ? output.slice(0, limit) : output;
+    };
+    String.prototype.split = function (separator, limit) {
+        return self(this, separator, limit);
+    };
+    return self;
+}();
+var locStorage = function () {
+    var UserData = {
+        userData: null,
+        name: location.hostname,
+        init: function(){
+            if (!UserData.userData) {
+                try {
+                    UserData.userData = document.createElement('INPUT');
+                    UserData.userData.type = "hidden";
+                    UserData.userData.style.display = "none";
+                    UserData.userData.addBehavior("#default#userData");
+                    document.body.appendChild(UserData.userData);
+                    var expires = new Date();
+                    expires.setDate(expires.getDate() + 365);
+                    UserData.userData.expires = expires.toUTCString();
+                } catch (e) {
+                    return false;
+                }
+            }
+            return true;
+        },
+        setItem: function (key, value) {
+            if (UserData.init()) {
+                UserData.userData.load(UserData.name);
+                UserData.userData.setAttribute(key, value);
+                UserData.userData.save(UserData.name);
+            }
+        },
+        getItem: function (key) {
+            if (UserData.init()) {
+                UserData.userData.load(UserData.name);
+                return UserData.userData.getAttribute(key)
+            }
+        },
+        removeItem: function (key) {
+            if (UserData.init()) {
+                UserData.userData.load(UserData.name);
+                UserData.userData.removeAttribute(key);
+                UserData.userData.save(UserData.name);
+            }
+
+        }
+    };
+    var _locStorage = null;
+    if (typeof localStorage == "object") {
+        _locStorage = localStorage;
+    } else {
+        _locStorage = UserData;
+    }
+    return {
+        setItem: function (map, value) {
+            if (typeof value != "undefined") {
+                _locStorage.setItem(map, value);
+            } else if (typeof map === "object") {
+                for (var i in map) {
+                    _locStorage.setItem(i, map[i]);
+                }
+            }
+        },
+        getItem: function (key) {
+            return _locStorage.getItem(key);
+        },
+        removeItem: function (keys) {
+            if (typeof keys == "string") {
+                keys = [keys];
+            }
+            for (var i = 0, len = keys.length; i < len; i++) {
+                _locStorage.removeItem(keys[i]);
+            }
+        }
+    }
+}();
+if (!this.JSON) {
+	this.JSON = {}
+} (function() {
+	function f(n) {
+		return n < 10 ? "0" + n: n
+	}
+	if (typeof Date.prototype.toJSON !== "function") {
+		Date.prototype.toJSON = function(key) {
+			return isFinite(this.valueOf()) ? this.getUTCFullYear() + "-" + f(this.getUTCMonth() + 1) + "-" + f(this.getUTCDate()) + "T" + f(this.getUTCHours()) + ":" + f(this.getUTCMinutes()) + ":" + f(this.getUTCSeconds()) + "Z": null
+		};
+		String.prototype.toJSON = Number.prototype.toJSON = Boolean.prototype.toJSON = function(key) {
+			return this.valueOf()
+		}
+	}
+	var cx = /[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,
+	escapable = /[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,
+	gap, indent, meta = {
+		"\b": "\\b",
+		"\t": "\\t",
+		"\n": "\\n",
+		"\f": "\\f",
+		"\r": "\\r",
+		'"': '\\"',
+		"\\": "\\\\"
+	},
+	rep;
+	function quote(string) {
+		escapable.lastIndex = 0;
+		return escapable.test(string) ? '"' + string.replace(escapable,
+		function(a) {
+			var c = meta[a];
+			return typeof c === "string" ? c: "\\u" + ("0000" + a.charCodeAt(0).toString(16)).slice( - 4)
+		}) + '"': '"' + string + '"'
+	}
+	function str(key, holder) {
+		var i, k, v, length, mind = gap,
+		partial, value = holder[key];
+		if (value && typeof value === "object" && typeof value.toJSON === "function") {
+			value = value.toJSON(key)
+		}
+		if (typeof rep === "function") {
+			value = rep.call(holder, key, value)
+		}
+		switch (typeof value) {
+		case "string":
+			return quote(value);
+		case "number":
+			return isFinite(value) ? String(value) : "null";
+		case "boolean":
+		case "null":
+			return String(value);
+		case "object":
+			if (!value) {
+				return "null"
+			}
+			gap += indent;
+			partial = [];
+			if (Object.prototype.toString.apply(value) === "[object Array]") {
+				length = value.length;
+				for (i = 0; i < length; i += 1) {
+					partial[i] = str(i, value) || "null"
+				}
+				v = partial.length === 0 ? "[]": gap ? "[\n" + gap + partial.join(",\n" + gap) + "\n" + mind + "]": "[" + partial.join(",") + "]";
+				gap = mind;
+				return v
+			}
+			if (rep && typeof rep === "object") {
+				length = rep.length;
+				for (i = 0; i < length; i += 1) {
+					k = rep[i];
+					if (typeof k === "string") {
+						v = str(k, value);
+						if (v) {
+							partial.push(quote(k) + (gap ? ": ": ":") + v)
+						}
+					}
+				}
+			} else {
+				for (k in value) {
+					if (Object.hasOwnProperty.call(value, k)) {
+						v = str(k, value);
+						if (v) {
+							partial.push(quote(k) + (gap ? ": ": ":") + v)
+						}
+					}
+				}
+			}
+			v = partial.length === 0 ? "{}": gap ? "{\n" + gap + partial.join(",\n" + gap) + "\n" + mind + "}": "{" + partial.join(",") + "}";
+			gap = mind;
+			return v
+		}
+	}
+	if (typeof JSON.stringify !== "function") {
+		JSON.stringify = function(value, replacer, space) {
+			var i;
+			gap = "";
+			indent = "";
+			if (typeof space === "number") {
+				for (i = 0; i < space; i += 1) {
+					indent += " "
+				}
+			} else {
+				if (typeof space === "string") {
+					indent = space
+				}
+			}
+			rep = replacer;
+			if (replacer && typeof replacer !== "function" && (typeof replacer !== "object" || typeof replacer.length !== "number")) {
+				throw new Error("JSON.stringify")
+			}
+			return str("", {
+				"": value
+			})
+		}
+	}
+	if (typeof JSON.parse !== "function") {
+		JSON.parse = function(text, reviver) {
+			var j;
+			function walk(holder, key) {
+				var k, v, value = holder[key];
+				if (value && typeof value === "object") {
+					for (k in value) {
+						if (Object.hasOwnProperty.call(value, k)) {
+							v = walk(value, k);
+							if (v !== undefined) {
+								value[k] = v
+							} else {
+								delete value[k]
+							}
+						}
+					}
+				}
+				return reviver.call(holder, key, value)
+			}
+			text = String(text);
+			cx.lastIndex = 0;
+			if (cx.test(text)) {
+				text = text.replace(cx,
+				function(a) {
+					return "\\u" + ("0000" + a.charCodeAt(0).toString(16)).slice( - 4)
+				})
+			}
+			if (/^[\],:{}\s]*$/.test(text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g, "@").replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g, "]").replace(/(?:^|:|,)(?:\s*\[)+/g, ""))) {
+				j = eval("(" + text + ")");
+				return typeof reviver === "function" ? walk({
+					"": j
+				},
+				"") : j
+			}
+			throw new SyntaxError("JSON.parse")
+		}
+	}
+} ());
+;(function (root,version) {
+root.SM = {
+    config: [{"reg":"^\/$","selectors":[{"dom":".sift ul.list li a","e":"spm","k":"1.1.1"},{"dom":".category ul.list li a","e":"spm","k":"1.1.2"},{"dom":".guarantee ul.list li a","e":"spm","k":"1.1.15"},{"dom":".publish ul.list li a","e":"spm","k":"1.1.16"},{"dom":".hot .tab-items [data-tab-item=hot_list_day] li a","e":"spm","k":"1.1.17"},{"dom":".hot .tab-items [data-tab-item=hot_list_week] li a","e":"spm","k":"1.1.18"},{"dom":".quality ul.list li a","e":"spm","k":"1.1.19"},{"dom":".latest ul.list li a","e":"spm","k":"1.1.20"},{"dom":"#header ul.menu li.track .tab-items [data-tab-item=browse] li a","e":"spm","k":"1.1.21"},{"dom":"#header ul.menu li.track .tab-items [data-tab-item=collect] li a","e":"spm","k":"1.1.22"},{"dom":"#header ul.menu li.track .tab-items [data-tab-item=buy] li a","e":"spm","k":"1.1.23"},{"dom":"#btn_apply_auth","e":"click","k":"0"},{"dom":"#btn_index_cooperate","e":"click","k":"0"},{"dom":"#btn_index_settle","e":"click","k":"0"}],"page":"1"},{"reg":"^\/doclist\/list-([0-9]+)(-([0-9]+))?.html$","selectors":[{"dom":"#header ul.menu li.track .tab-items [data-tab-item=browse] li a","e":"spm","k":"1.8.43"},{"dom":"#header ul.menu li.track .tab-items [data-tab-item=collect] li a","e":"spm","k":"1.8.44"},{"dom":"#header ul.menu li.track .tab-items [data-tab-item=buy] li a","e":"spm","k":"1.8.45"},{"dom":".hot .tab-items [data-tab-item=hot_list_day] li a","e":"spm","k":"1.8.46"},{"dom":".hot .tab-items [data-tab-item=hot_list_week] li a","e":"spm","k":"1.8.47"},{"dom":".scate ul.doc-list li .front a","e":"spm","k":"1.8.48"},{"dom":".scate ul.doc-list li .title a","e":"spm","k":"1.8.49"},{"dom":".scate ul.doc-list li .intros a","e":"spm","k":"1.8.50"}],"page":"8"},{"reg":"^\/ebook.html$","selectors":[],"page":"29"},{"reg":"^\/ebook\/class(-[0-9]+)?.html$","selectors":[],"page":"30"},{"reg":"^\/ebook\/class([0-9]+)(-[0-9]+)?.html$","selectors":[],"page":"31"},{"reg":"^\/ebook\/search.html$","selectors":[],"page":"33"},{"reg":"^\/ebook\/topic.html$","selectors":[],"page":"32"},{"reg":"^\/guarantee.html$","selectors":[],"page":"14"},{"reg":"^\/html\/([0-9]+)\/([0-9]+)\/([0-9]+).shtm$","selectors":[{"dom":".interest ul.list li.item a","e":"spm","k":"1.2.4"},{"dom":".relate ul.list li a","e":"spm","k":"1.2.5"},{"dom":".similar ul.list li.item a","e":"spm","k":"1.2.6"},{"dom":".favorite ul.list li a","e":"spm","k":"1.2.7"},{"dom":"#book_layer ul.example li a","e":"spm","k":"1.2.8"},{"dom":"#book_layer ul.list li a","e":"spm","k":"1.2.9"},{"dom":".webpreview-recommend ul.re-title li a","e":"spm","k":"1.2.13"},{"dom":".webpreview-recommend ul.re-front li a","e":"spm","k":"1.2.14"},{"dom":"#header ul.menu li.track .tab-items [data-tab-item=browse] li a","e":"spm","k":"1.2.24"},{"dom":"#header ul.menu li.track .tab-items [data-tab-item=collect] li a","e":"spm","k":"1.2.25"},{"dom":"#header ul.menu li.track .tab-items [data-tab-item=buy] li a","e":"spm","k":"1.2.26"},{"dom":".interest ul.list li.prepend-corpus a","e":"spm","k":"1.2.52"},{"dom":".similar ul.list li.prepend-corpus a","e":"spm","k":"1.2.53"},{"dom":".preview-office .preview-bar ul.prepend-corpus li a","e":"spm","k":"1.2.54"},{"dom":".preview .preview-ft .corpus-list ul li a","e":"spm","k":"1.2.55"},{"dom":".download-success .recommend ul.list li.item a","e":"spm","k":"1.2.68"},{"dom":".download-success .recommend ul.list li.prepend-corpus a","e":"spm","k":"1.2.69"},{"dom":"#title_download","e":"click","k":"1"},{"dom":"#btn_preview_download","e":"click","k":"1"},{"dom":"#hd_download","e":"click","k":"1"},{"dom":"#bar_download","e":"click","k":"1"},{"dom":"#btn_detail_settle","e":"click","k":"0"},{"dom":"#btn_uhome_logo","e":"click","k":"0"},{"dom":"#btn_uhome_name","e":"click","k":"0"},{"dom":"#btn_uhome_hd","e":"click","k":"0"},{"dom":"#btn_consult_hd","e":"click","k":"0"},{"dom":"#hd_feedback","e":"click","k":"0"},{"dom":"#header_fixed .mqrcode a","e":"click","k":"0"}],"page":"2"},{"reg":"^\/html\/docs\/$","selectors":[{"dom":"#header ul.menu li.track .tab-items [data-tab-item=browse] li a","e":"spm","k":"1.7.37"},{"dom":"#header ul.menu li.track .tab-items [data-tab-item=collect] li a","e":"spm","k":"1.7.38"},{"dom":"#header ul.menu li.track .tab-items [data-tab-item=buy] li a","e":"spm","k":"1.7.39"},{"dom":".recommends .swiper ul li a","e":"spm","k":"1.7.40"},{"dom":".slider .download ul.list li a","e":"spm","k":"1.7.41"},{"dom":".category .item ul.list li a","e":"spm","k":"1.7.42"}],"page":"7"},{"reg":"^\/organization\/$","selectors":[],"page":"28"},{"reg":"^\/search.html$","selectors":[{"dom":".exhibition ul.list li .front a","e":"spm","k":"1.5.10"},{"dom":".exhibition ul.list li .title a","e":"spm","k":"1.5.11"},{"dom":".exhibition ul.list li .intros a","e":"spm","k":"1.5.12"},{"dom":"#header ul.menu li.track .tab-items [data-tab-item=browse] li a","e":"spm","k":"1.5.27"},{"dom":"#header ul.menu li.track .tab-items [data-tab-item=collect] li a","e":"spm","k":"1.5.28"},{"dom":"#header ul.menu li.track .tab-items [data-tab-item=buy] li a","e":"spm","k":"1.5.29"},{"dom":".related ul.list li a","e":"spm","k":"1.5.67"}],"page":"5"},{"reg":"^\/topics\/(list|view)(-[0-9]+)?.html$","selectors":[{"dom":".topten .tab-items [data-tab-item=topten_list_day] li a","e":"spm","k":"1.6.30"},{"dom":".topten .tab-items [data-tab-item=topten_list_week] li a","e":"spm","k":"1.6.31"},{"dom":"#header ul.menu li.track .tab-items [data-tab-item=browse] li a","e":"spm","k":"1.6.32"},{"dom":"#header ul.menu li.track .tab-items [data-tab-item=collect] li a","e":"spm","k":"1.6.33"},{"dom":"#header ul.menu li.track .tab-items [data-tab-item=buy] li a","e":"spm","k":"1.6.34"},{"dom":"#special .main .bd .classify ul.list li a","e":"spm","k":"1.6.35"},{"dom":".resemble ul.list li a","e":"spm","k":"1.6.36"}],"page":"6"},{"reg":"^\/uhome\/([0-9]+)-collected-([0-9]+).html$","selectors":[{"dom":"#anthology .main .bd ul.list li a","e":"spm","k":"1.37.64"},{"dom":"#quality ul.list li a","e":"spm","k":"1.37.65"}],"page":"37"},{"reg":"^\/uhome\/([0-9]+)-doc.html$","selectors":[{"dom":"#doc .main .bd ul.list li a","e":"spm","k":"1.35.63"}],"page":"35"},{"reg":"^\/uhome\/([0-9]+)-search.html$","selectors":[{"dom":"#doc .main .bd ul.list li a","e":"spm","k":"1.36.66"}],"page":"36"},{"reg":"^\/uhome\/([0-9]+).html$","selectors":[{"dom":"#recommend ul.list li a","e":"spm","k":"1.34.51"},{"dom":"#hot .sketch .intro .cover a","e":"spm","k":"1.34.56"},{"dom":"#hot .sketch .intro  a.title","e":"spm","k":"1.34.57"},{"dom":"#hot .sketch .examine a","e":"spm","k":"1.34.58"},{"dom":"#hot ul.list li .intro .cover a","e":"spm","k":"1.34.59"},{"dom":"#hot ul.list li .examine a.title","e":"spm","k":"1.34.60"},{"dom":"#hot ul.list li .examine a.look","e":"spm","k":"1.34.61"},{"dom":"#quality ul.list li a","e":"spm","k":"1.34.62"},{"dom":"#consulting","e":"click","k":"0"}],"page":"34"},{"reg":"^\/user_center_v1\/upload.html$","selectors":[],"page":"9"},{"reg":"^\/user_center_v1\/upload\/Upload\/normal.html$","selectors":[],"page":"13"},{"reg":"^\/user_center_v1\/upload\/Upload\/ordinary.html$","selectors":[],"page":"10"},{"reg":"^\/user_center_v1\/upload\/Upload\/original.html$","selectors":[],"page":"11"},{"reg":"^\/user_center_v1\/upload\/Upload\/sole.html$","selectors":[],"page":"12"},{"reg":"^\/user_center_v1\/user\/recharge\/index.html$","selectors":[],"page":"15"}],
+    base: {"url":"\/\/ehm.book118.com\/log.gif?","path":"\/","session_interval":1800000},
+    selectors: [],
+    flag: {
+        click: '' //记录页面级来源
+    },
+    define: {},
+    data: {
+        k: 'fb04f36f1e0ee36c30fab46eec18d62f',
+        p: '(none)',
+        u: document.URL,
+        r: document.referrer,
+        m: '(none)',
+        v: version,
+        s: '(none)',
+        s_n: 0,
+        s_d: 0,
+        s_r: '(none)',
+        d: 0, 
+        d_f: 0, 
+        e: 'pageviews',
+        cs: '{}',
+        spm: '0.0.0.0',
+        click: '(none)',
+        code: '(none)',
+        scm: '(none)'
+    },
+    init: function(){
+        var that = this,
+            reg = {};
+        for( var k in that.config ){
+            if( that.config[k]['reg'] ){
+                reg = new RegExp(that.config[k]['reg']);
+                if( reg && reg.test( window.location.pathname ) ){
+                    that.data.p = that.config[k]['page'];
+                    that.selectors = that.config[k]['selectors'];
+                    break;
+                }
+            }
+        }
+        if( typeof $ != 'undefined' ){
+            that.bind();
+        }else{
+            that.util.loadScript('//static.book118.com/user_center_v1/static/plugin/jquery/jquery.min.js',function(){
+                that.bind();
+            });
+        }
+        that.pv();
+    },
+    bind: function(){
+        var that = this,
+            bindClick = function($dom,e,k,c){
+                $dom.attr('data-sm',e+','+ k + ',' + c);
+                $dom.on('click',function(){
+                    var _data = $(this).attr('data-sm') || '',
+                        _arr = _data.split(',') || [];
+                    if( _arr.length ){
+                        switch(_arr[0]){
+                            case 'spm':
+                                var _href = $(this).attr('href');
+                                if( _href ){
+                                    _href = _href.substr(0,4).toLocaleLowerCase() != 'http' ? window.location.origin + _href : _href;
+                                    var _href_domain = that.util.getUrlDomain(_href);
+                                        _current_domain = that.util.getUrlDomain(window.location.href);
+                                    if( _href_domain == _current_domain ){
+                                        _arr[2] = _href;
+                                        that.push(_arr);
+                                    }
+                                }
+                                break;
+                            case 'click':
+                                that.push(_arr);
+                                break;
+                        }
+                    }
+                });
+            };
+            doInterval = function(){
+                var item = {},
+                    $dom = {},
+                    l = 0,
+                    e = '',
+                    k = '',
+                    c = 0,
+                    b = 0;
+                for( var i = 0; i < that.selectors.length; i++ ){
+                    item = that.selectors[i];
+                    $dom = $(item.dom);
+                    l = $dom.length;
+                    e = item.e;
+                    k = item.e == 'click' ? item.dom : item.k;
+                    c = item.e == 'click' ? item.k : 0;
+                    b = item.b || 0;
+                    if( l > 0 ){
+                        if( b == 0 ){
+                            if( l > 1 ){
+                                $dom.each(function(index){
+                                    bindClick($(this), e, k + '.' + index, c);
+                                });
+                            }else{
+                                bindClick($dom, e, k, c);
+                            }
+                            that.selectors[i].b = l;
+                        }else {
+                            if( l > b ){
+                                $dom.each(function(index){
+                                    if( !$(this).attr('data-sm') ){
+                                        bindClick($(this), e, k + '.' + index, c);
+                                    }
+                                });
+                                that.selectors[i].b = l;
+                            }
+                        }
+                    }
+                }
+            };
+        if( that.selectors.length ){
+            doInterval();
+            setInterval(function(){
+                doInterval();
+            }, 300);
+        }
+    },
+    cmd: function(cmds){
+        var that = this;
+        for(var i = 0; i < cmds.length; i++ ){
+            that.push(cmds[i]);
+        }
+    },
+    push: function(arr){
+        var that = this,
+            util = that.util;
+        if( util.isArrar(arr)){
+            switch(arr[0]){
+                case 'define':
+                    var call_type = Object.prototype.toString.call(arr[1]);
+                    if( call_type === '[object Object]' ){
+                        for( var k in arr[1] ){
+                            that.define[ k ] = arr[1][k];
+                        }
+                    }else if( call_type == '[object String]' ){
+                        that.define[ arr[1] ] = arr[2] || '(none)';
+                    }
+                    break
+                case 'spm':
+                    util.setSpm(arr[1],arr[2]);
+                break;
+                case 'click':
+                    that.data.e = 'click';
+                    that.data.click = arr[1];
+                    that.flag.click = arr[2] ? arr[1] : that.flag.click;
+                    that.data.code = '(none)';
+                    that.data.scm = '(none)';
+                    that.to();
+                break;
+                case 'code':
+                    that.data.e = 'custom';
+                    that.data.click = '(none)';
+                    that.data.code = arr[1];
+                    that.data.scm = that.flag.click ? that.flag.click : '(none)';
+                    that.to();
+                break;
+                default:
+                    console.log(e + '不是处理事件');
+                    break;
+            }
+        }
+    },
+    pv: function(){
+        var that = this;
+        that.data.e = 'pageviews';
+        that.data.click = '(none)';
+        that.data.code = '(none)';
+        that.data.scm = '(none)';
+        that.to();
+    },
+    to: function(){
+        var that = this,
+            util = that.util,
+            url = '',
+            visitor = util.getStorageVisitor(),
+            session = util.getStorageSession();
+        that.data.cs = util.getObjectLength(that.define) ? JSON.stringify(that.define) : '{}';
+        that.data.r = util.getReferrer();
+        that.data.m = visitor;
+        that.data.s = session.id;
+        that.data.s_n = session.num;
+        that.data.s_d = session.day;
+        that.data.s_r = session.ref;
+        that.data.spm = util.getSpm();
+        that.data.d = util.getCurentTime();
+        that.data.d_f = +visitor.substring(0,13);
+        url = util.parseURL(that.data);
+        util.toImg(url);
+    }
+};
+SM.util = {
+    keys: {
+        visitor: 'V_ID',
+        sesstion: 'S_ID',
+        referrer: 'S_REF',
+        spm: 'SPM'
+    },
+    getCurentTime: function(){
+        var date = new Date();
+		return date.setTime(date.getTime());
+    },
+    isArrar: function(arr){
+        return typeof arr == "object" && (arr instanceof Array);
+    },
+    getObjectLength: function(obj){
+        if( typeof Object.getOwnPropertyNames != 'undefined'){
+            return Object.getOwnPropertyNames(obj).length;
+        }else{
+            var i = 0;
+            for( var prop in obj ){
+                i++;
+            }
+            return i;
+        }
+    },
+    setStorage: function(k,v){
+        var that = this,
+            key = that.keys[k] || '';
+        if( key && v ){
+            v = Object.prototype.toString.call(v) === '[object Object]' ? JSON.stringify(v) : v;
+            localStorage.setItem(key,v);
+        }
+    },
+    getStorage: function(k){
+        var that = this,
+            key = that.keys[k] || '',
+            v = '';
+        if( key ){
+            v = localStorage.getItem(key) || '';
+            return that.isJSON(v) ? JSON.parse(v) : v;
+        }else{
+            return null;
+        }
+    },
+    isJSON: function(str) {
+        if( typeof(str) === 'string' ) {
+            try{
+                var obj = JSON.parse(str);
+                if(typeof(obj) === 'object' && obj) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+            catch(e) {
+                return false;
+            }
+        }
+    }, 
+    setSpm: function(spm,n){
+        var that = this,
+            i = 0,
+            k = 'spm',
+            key = '',
+            t = 0,
+            o = {},
+            arr = [],
+            max = 20,
+            tempObj = {},
+            tempArr = [],
+            tempSpms = {},
+            spms = that.getStorage(k) || {};
+        spms[n] = spm + '_' + that.getCurentTime();
+        for( key in spms ){
+            arr = spms[key].split('_');
+            o = {};
+            o[key] = arr[0];
+            i++;
+            t = +arr[1] || that.getCurentTime() - 1 * 60 * 60 * 1000 - i;
+            tempObj[t] = o;
+            tempArr.push(t);
+        }
+        tempArr.sort(function(a,b){
+            return +b - +a;
+        });
+        max = tempArr.length > max ? max : tempArr.length; 
+        for( i = 0; i < max; i++ ){
+            t = tempArr[i],
+            o = tempObj[t];
+            for( key in o ){
+                tempSpms[key] = o[key] + '_' + t;
+            }
+        }
+        that.setStorage(k,tempSpms);
+    },
+    getSpm: function(){
+        var that = this,
+            k = 'spm',
+            arr = [],
+            spms = that.getStorage(k) || {},
+            n = '' + window.location.href,
+            spm = spms[n];
+        if( spm ){
+            arr = spm.split('_');
+            return arr[0];
+        }else{
+            return '0.0.0.0';
+        }
+    },
+    getUrlDomain: function(url){
+        var s = url.indexOf('//') + 2,
+            w_url = url.substring(s,url.length),
+            n = w_url.indexOf('/');
+        return w_url.substring(0,n);
+    },
+    getTopDomain: function(){
+        var domain = document.domain,
+            dot = domain.split('.');
+        switch(dot.length){
+            case 2:
+                domain = dot[0] + '.'+ dot[1];
+                break;
+            case 3:
+                domain = dot[1] + '.'+ dot[2];
+                break;
+        }
+        return domain;
+    },
+    generateRandomGuid: function(sup){
+        var that = this,
+            guid = that.getCurentTime() + '',
+            chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split(''),
+            uuid = [];
+        for (var i = 0; i < 8; i++){
+            uuid[i] = chars[ 0 | Math.random() * 16 ];  
+        }
+        guid += uuid.join('');
+        uuid = [];
+        for (var i = 0; i < 4; i++){
+            uuid[i] = chars[ 0 | Math.random() * 8 ];  
+        }
+        guid += uuid.join('');
+        guid += sup || '';
+        return guid;
+    },
+    getStorageSession: function(){
+        var that = this,
+            session = that.getStorage('sesstion'),
+            set = session ? 0 : 1,
+            arr = [],
+            id = '',
+            num = 0,
+            day = 0,
+            t = 0,
+            ref = that.getReferrer(),
+            c = that.getCurentTime(),
+            diff = 0;
+        session = session ? session : that.generateRandomGuid('_0');
+        arr = session ? session.split('_') : [];
+        if( arr.length ){
+            id = arr[0];
+            num = +arr[1];
+            t = +id.substring(0,13);
+            diff = c - t;
+            day = Math.floor( diff / (24 * 3600 * 1000));
+            ref = that.getStorage('referrer') || that.getReferrer();
+            if( diff >= SM.base.session_interval ){
+                set = 1;
+                num = num + 1;
+                session = that.generateRandomGuid('_'+ num);
+                id = session.split('_')[0];
+                ref = that.getReferrer();
+            }
+        }
+        if( set ){
+            that.setStorage('sesstion',session);
+            that.setStorage('referrer',ref);
+        }
+        return {
+            id: id,
+            num: num,
+            day: day,
+            ref: ref
+        };
+    },
+    getStorageVisitor: function(){
+        var that = this,
+            k = 'visitor',
+            visitor = that.getStorage(k) || that.generateRandomGuid();
+        that.setStorage(k,visitor);
+        return visitor;
+    },
+    getReferrer: function(){
+        var that = this,
+            ref = document.referrer,
+            ref_domain = '',
+            top_domain = that.getTopDomain();
+        if( ref ){
+            ref_domain = that.getUrlDomain(ref);
+            return ref_domain.indexOf(top_domain) != -1 ? ref : ref_domain;
+        }else{
+            return '(none)';
+        }
+    },
+    parseURL: function(data){
+        var arr = [],
+            u = function(str) {
+                str = (str + "").toString();
+                return encodeURIComponent(str).replace(/!/g, "%21").replace(/'/g, "%27").replace(/\(/g, "%28").replace(/\)/g, "%29").replace(/\*/g, "%2A").replace(/%20/g, "+");
+            };
+        for(var k in data){
+            arr.push( k + '=' + u(data[k]) );
+        }
+        return SM.base.url + arr.join('&');
+    },
+    toImg: function(url){
+        var that = this,
+            image = new Image(1, 1),
+            r = "sm_image" + that.generateRandomGuid();
+        window[r] = image;
+        image.onload = function() {
+            image.onload = null;
+            image = window[r] = null
+        };
+        image.src = url +'&t=' + that.getCurentTime();
+    },
+    toForm: function(){
+        //需要用再补充
+    },
+    loadScript: function(_src,callback){
+        var _v = '',
+            _script = document.createElement("script");
+        if( _src.indexOf('?v=') != -1 ){
+            var arr = _src.split('?v=');
+            _src = arr[0];
+            _v = arr[1];
+        }
+        _script.type = "text/javascript";
+        _script.src = _src + '?v=' + version + _v;
+        document.getElementsByTagName('head')[0].appendChild(_script);
+        if (!/*@cc_on!@*/0) {
+            _script.onload = function () {
+                callback();
+            }
+        } else {
+            _script.onreadystatechange = function () {
+                if (_script.readyState == 'loaded' || _script.readyState == 'complete') {
+                    callback();
+                }
+            }
+        }
+    }
+};
+if( sm_cmd != 'undefined' && SM.util.isArrar(sm_cmd) ){
+    SM.cmd(sm_cmd);
+}
+window['sm_cmd'] = SM;
+SM.init();
+})(window,'0.0.0');

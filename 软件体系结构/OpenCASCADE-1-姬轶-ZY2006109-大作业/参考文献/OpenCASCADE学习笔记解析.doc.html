@@ -1,0 +1,659 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!-- saved from url=(0052)https://max.book118.com/html/2017/0110/82015109.shtm -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <title>OpenCASCADE学习笔记解析.doc</title>
+    <meta name="keywords" content="学习,笔记,解析">
+    <meta name="description" content="OpenCASCADE学习笔记解析.doc,前言 很久就想这篇东西，可一直懒于动脑且为一些俗事烦恼，所以才拖到现在才动笔把我上学期间一篇论文整理一下，仅供参考。我分成几段来写，如果想看懂这篇文章，那首先要了解每段之前的关键词，不懂的可以在网上搜一下。然后还有看这篇文章的时候希望你能按自己的需要来看，有很多是写给自己看的，你只挑自己有用的看就行了，省得到时候埋怨我浪费你宝贵的时间，我这人写东西不行，尽量写的有条理，尽量吧。 第1章 意义，它是三维造型软件的内核、基础。 关键词：三维造型软件、虚拟现实技术、仿真技术、OpenGL、几何内核系统">
+    <meta name="author" content="book118.com">
+    <meta name="copyright" content="book118.com">
+    <meta name="generator" content="book118.com">
+    <meta http-equiv="Cache-Control" content="no-transform">
+        <link rel="alternate" media="only screen and (max-width: 640px)" href="https://m.book118.com/html/2017/0110/82015109.shtm">
+        <link rel="shortcut icon" href="https://static.book118.com/user_center_v1/static/lib/images/icon/favicon.ico">
+    <link href="./OpenCASCADE学习笔记解析.doc_files/common.css" rel="stylesheet" type="text/css">
+    <link href="./OpenCASCADE学习笔记解析.doc_files/detail.css" rel="stylesheet" type="text/css">
+    <script src="./OpenCASCADE学习笔记解析.doc_files/hm.js.下载"></script><script src="./OpenCASCADE学习笔记解析.doc_files/wd.js.下载"></script><script type="text/javascript" src="./OpenCASCADE学习笔记解析.doc_files/jquery.min.js.下载"></script>
+    <script type="text/javascript">document.domain = 'book118.com';</script>
+    <!--[if IE]>
+    <script type="text/javascript" src="//static.book118.com/user_center_v1/static/plugin/jquery/jquery.ie.js"></script>
+    <![endif]-->
+    <link href="./OpenCASCADE学习笔记解析.doc_files/detail(1).css" rel="stylesheet" type="text/css">
+
+<link rel="stylesheet" href="./OpenCASCADE学习笔记解析.doc_files/layer.css" id="layuicss-layer"><script type="text/javascript" src="./OpenCASCADE学习笔记解析.doc_files/preview.pic.js.下载"></script><link rel="stylesheet" type="text/css" href="./OpenCASCADE学习笔记解析.doc_files/serviceshop.css"><script type="text/javascript" src="./OpenCASCADE学习笔记解析.doc_files/carousel.js.下载"></script><link rel="stylesheet" type="text/css" href="./OpenCASCADE学习笔记解析.doc_files/webpreview.css"></head>
+<body>
+<!-- /header 开始 -->
+<div id="header" class="header">
+    <div class="container">
+        <div class="logo">
+            <a href="https://max.book118.com/" title="原创力文档网"><img src="./OpenCASCADE学习笔记解析.doc_files/logo.png"><strong>原创力文档</strong><span>知识共享存储平台</span></a>
+        </div>
+        <ul class="nav clear">
+            <li class="docs" data-header-drop="docs">
+                <a href="https://max.book118.com/html/docs/" title="文档分类">文档分类 <i class="icon-font icon-common icon-common-drop-down-big"></i></a>
+                <div class="drop-down">
+                    <div class="icon-triangle"></div>
+                    <div class="panel">
+                        <ul class="list">
+                            <li><a href="https://max.book118.com/doclist/list-312.html" title="计算机" target="_blank">计算机</a></li>
+                            <li><a href="https://max.book118.com/doclist/list-360.html" title="高等教育" target="_blank">高等教育</a></li>
+                            <li><a href="https://max.book118.com/doclist/list-378.html" title="金融/投资/证券" target="_blank">金融/投资/证券</a></li>
+                            <li><a href="https://max.book118.com/doclist/list-392.html" title="医药卫生" target="_blank">医药卫生</a></li>
+                            <li><a href="https://max.book118.com/doclist/list-430.html" title="汽车/机械/制造" target="_blank">汽车/机械/制造</a></li>
+                            <li><a href="https://max.book118.com/doclist/list-455.html" title="外语学习" target="_blank">外语学习</a></li>
+                            <li><a href="https://max.book118.com/doclist/list-480.html" title="报告/分析" target="_blank">报告/分析</a></li>
+                            <li><a href="https://max.book118.com/doclist/list-498.html" title="法律/法规/法学" target="_blank">法律/法规/法学</a></li>
+                            <li><a href="https://max.book118.com/doclist/list-521.html" title="研究生考试" target="_blank">研究生考试</a></li>
+                            <li><a href="https://max.book118.com/doclist/list-530.html" title="电子工程/通信技术" target="_blank">电子工程/通信技术</a></li>
+                            <li><a href="https://max.book118.com/doclist/list-551.html" title="经济/贸易/财会" target="_blank">经济/贸易/财会</a></li>
+                            <li><a href="https://max.book118.com/doclist/list-562.html" title="建筑/施工" target="_blank">建筑/施工</a></li>
+                            <li><a href="https://max.book118.com/doclist/list-612.html" title="幼儿/小学教育" target="_blank">幼儿/小学教育</a></li>
+                            <li><a href="https://max.book118.com/doclist/list-622.html" title="中学教育" target="_blank">中学教育</a></li>
+                            <li><a href="https://max.book118.com/doclist/list-638.html" title="文学/历史/军事/艺术" target="_blank">文学/历史/军事/艺术</a></li>
+                            <li><a href="https://max.book118.com/doclist/list-669.html" title="资格/认证考试" target="_blank">资格/认证考试</a></li>
+                            <li><a href="https://max.book118.com/doclist/list-698.html" title="人力资源/企业管理" target="_blank">人力资源/企业管理</a></li>
+                            <li><a href="https://max.book118.com/doclist/list-730.html" title="学术论文" target="_blank">学术论文</a></li>
+                            <li><a href="https://max.book118.com/doclist/list-746.html" title="行业资料" target="_blank">行业资料</a></li>
+                            <li><a href="https://max.book118.com/doclist/list-788.html" title="办公文档" target="_blank">办公文档</a></li>
+                            <li><a href="https://max.book118.com/doclist/list-813.html" title="生活休闲" target="_blank">生活休闲</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </li>
+            <li class="bookstore"><a href="https://max.book118.com/ebook.html" title="精品" target="_blank">精品</a></li>
+            <li class="course" data-header-drop="course"><a href="https://ke.book118.com/" title="课堂资源" target="_blank">课堂资源 <i class="icon-font icon-common icon-common-drop-down-big"></i></a><small class="icon-partner"></small><div class="drop-down"><div class="icon-triangle"></div><div class="panel"></div></div></li>
+            <li class="all" data-header-drop="all"><a href="javascript:;" title="全部服务">全部服务 <i class="icon-font icon-common icon-common-drop-down-big"></i></a><div class="drop-down"><div class="icon-triangle"></div><div class="panel"></div></div></li>
+        </ul>
+        <!-- /search 开始 -->
+        <div class="search">
+            <div class="search-group">
+                <input class="search-control" name="keywords" type="text" aria-label="原创力文档-3亿文档供您搜" value="" placeholder="OpenCASCADE学习笔记解析" autocomplete="off">
+                <button class="btn btn-search" type="button" title="点击搜索"><i class="icon-header"></i></button>
+            </div>
+            <div class="search-drop-down"></div>
+        </div>
+        <!-- /search 结束-->
+        <ul class="menu clear">
+            <li class="client" data-header-drop="client">
+                <a href="javascript:;" title="APP下载"><i class="icon-header"></i><span>APP下载</span></a>
+            <div class="drop-down"><div class="icon-triangle"></div><div class="panel"></div></div></li>
+            <li class="upload" data-header-drop="upload">
+                <a href="https://max.book118.com/user_center_v1/upload.html" title="我要上传" target="_blank"><i class="icon-header"></i><span>我要上传</span></a>
+            <div class="drop-down"><div class="icon-triangle"></div><div class="panel"></div></div></li>
+            <li class="track" data-header-drop="track">
+                <a href="https://max.book118.com/index.php?g=Home&amp;m=Suggest&amp;a=browse" title="查看足迹" target="_blank"><i class="icon-header"></i><span>足迹</span></a>
+            <div class="drop-down"><div class="icon-triangle"></div><div class="panel"></div></div></li>
+            <li class="member">
+                <a href="javascript:;" title="点击登录"><i class="icon-header"></i><span>未登录</span></a>
+            </li>
+        </ul>
+    </div>
+</div>
+<!-- /header 结束-->
+
+<div id="site">
+    <ol class="breadcrumb">
+        <li>您所在位置：</li>
+                <li><a href="https://max.book118.com/" title="网站首页">网站首页</a></li>
+        <li><i class="icon-font icon-common icon-common-gt"></i><a href="https://max.book118.com/html/docs/" title="文档分类">文档分类</a></li>
+                <li><i class="icon-font icon-common icon-common-gt"></i><a href="https://max.book118.com/doclist/list-312.html" title="计算机">计算机</a></li>        <li><i class="icon-font icon-common icon-common-gt"></i><a href="https://max.book118.com/doclist/list-316.html" title="Java">Java</a></li>    </ol>
+</div>
+<div id="main">
+    <div class="detail">
+        <!--文档简介 start-->
+        <div class="title">
+            <div class="format"><i class="icon icon-format icon-format-doc"></i></div>
+            <h1>OpenCASCADE学习笔记解析.doc</h1>
+            <ul class="operate">
+                <li><a href="javascript:;" data-owa="title_download" id="title_download" class="btn btn-download" title="下载OpenCASCADE学习笔记解析.doc" owa-btn="had" data-sm="click,#title_download,1"><i class="icon-detail"></i> <span>下载文档</span></a></li>
+            </ul>
+        </div>
+        <div class="intro">
+            <ul class="intro-list">
+                                <li><i class="icon-detail"></i> <span>2512</span> <i class="icon-font icon-common icon-common-split"></i></li>
+                <li><i class="icon-detail"></i> <span>0</span> <i class="icon-font icon-common icon-common-split"></i></li>
+                                <li><span>约 42页</span> <i class="icon-font icon-common icon-common-split"></i></li>
+                                <li><span>2017-01-10 发布</span> <i class="icon-font icon-common icon-common-split"></i></li>
+                                <li class="report"><a data-owa="operate_report" id="operate_report" href="javascript:;" title="举报" icon-hover="true" owa-btn="had"><i class="icon-detail"></i> <span> 举报</span></a> <i class="icon-font icon-common icon-common-split"></i></li>
+                <li class="claim"><a data-owa="operate_claim" id="operate_claim" href="javascript:;" title="版权申诉" icon-hover="true" owa-btn="had"><i class="icon-detail"></i> <span> 版权申诉</span></a></li>
+                            </ul>
+        </div>
+        <!--文档简介 end-->
+        <!--文档预览  start-->
+        <div class="preview">
+                        <div class="preview-hd">
+                <div class="container">
+                    <div class="hd">
+                        <div class="format"><i class="icon icon-format icon-format-doc"></i></div>
+                        <h2>OpenCASCADE学习笔记解析.doc</h2>
+                        <ul class="operate">
+                            <li><a data-owa="hd_download" id="hd_download" class="btn btn-download" href="javascript:;" title="下载OpenCASCADE学习笔记解析.doc" owa-btn="had" data-sm="click,#hd_download,1"><i class="icon-detail"></i> <span>下载文档</span></a></li>
+                            <li><a id="hd_close" class="btn btn-close" href="javascript:;" title="关闭预览"><i class="icon-detail"></i> <span>关闭预览</span></a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="preview-bd" style="cursor: grab;"><div class="webpreview-item" data-id="1" style="min-height: 1120px;"><img oncontextmenu="return false;" ondragstart="return false;" onload="WebPreview.Image.onLoad(this)" onerror="WebPreview.Image.onError(this)" src="./OpenCASCADE学习笔记解析.doc_files/wKh2BVyH_LiAWRocAADowhN8Xj8922.png" style="display: block;"></div><div class="webpreview-split"></div><div class="webpreview-recommend re" data-re_id="1"><ul class="re-title" id="re_title_1"><li><a href="https://max.book118.com/college/category9/article666.html" target="_blank" title="整治侵权、非法内容，人人有责" data-sm="spm,1.2.13.0,0" owa-href="had" owa-btn="had">整治侵权、非法内容，人人有责</a></li><li><a href="https://max.book118.com/college/category27/article292.html" target="_blank" title="Book118长期征稿活动，期待你来参与！" data-sm="spm,1.2.13.1,0" owa-href="had" owa-btn="had">Book118长期征稿活动，期待你来参与！</a></li><li><a href="https://max.book118.com/college/category8/article291.html" target="_blank" title="原创力文档网如何保障用户权益（下载者）" data-sm="spm,1.2.13.2,0" owa-href="had" owa-btn="had">原创力文档网如何保障用户权益（下载者）</a></li><li><a href="http://ask.book118.com/q/10857002.html" target="_blank" title="悬赏10元找：下载GS EP EXP 105 2012版" data-sm="spm,1.2.13.3,0" owa-href="had" owa-btn="had">悬赏<em>10</em>元找：下载GS EP EXP 105 2012版</a></li><li><a href="http://ask.book118.com/q/10857001.html" target="_blank" title="悬赏10元找：梁板架设首件资料" data-sm="spm,1.2.13.4,0" owa-href="had" owa-btn="had">悬赏<em>10</em>元找：梁板架设首件资料</a></li><li><a href="http://ask.book118.com/q/10857000.html" target="_blank" title="悬赏0.10元找：PLC电气控制与组态设计周美兰习题答案.docx" data-sm="spm,1.2.13.5,0" owa-href="had" owa-btn="had">悬赏<em>0.10</em>元找：PLC电气控制与组态设计周美兰习题答案.docx</a></li><li><a href="http://ask.book118.com/q/10856999.html" target="_blank" title="悬赏1元找：“互联网+”创业大赛模板.pdf" data-sm="spm,1.2.13.6,0" owa-href="had" owa-btn="had">悬赏<em>1</em>元找：“互联网+”创业大赛模板.pdf</a></li></ul><i class="fix">本站更多推荐</i></div><div class="webpreview-split">&nbsp;</div><div class="webpreview-item" data-id="2" style="min-height: 1120px;"><img oncontextmenu="return false;" ondragstart="return false;" onload="WebPreview.Image.onLoad(this)" onerror="WebPreview.Image.onError(this)" src="./OpenCASCADE学习笔记解析.doc_files/wKh2BVyH_LmAXLeQAAEqaAmLwmo641.png" style="display: block;"></div><div class="webpreview-split">&nbsp;</div><div class="webpreview-item" data-id="3" style="min-height: 1120px;"><div class="loading"><em></em><em></em><em></em><em></em><em></em><em></em><em></em><em></em><em></em><em></em><em></em><em></em><span>预览加载中，请您耐心等待几秒...</span></div><img oncontextmenu="return false;" ondragstart="return false;" onload="WebPreview.Image.onLoad(this)" onerror="WebPreview.Image.onError(this)" class="lazy" data-src="//view-cache.book118.com/view2/M00/08/1D/wKh2BVyH_LiAG3POAADwiWOrNbk252.png"></div><div class="webpreview-split">&nbsp;</div><div class="webpreview-item" data-id="4" style="min-height: 1120px;"><div class="loading"><em></em><em></em><em></em><em></em><em></em><em></em><em></em><em></em><em></em><em></em><em></em><em></em><span>预览加载中，请您耐心等待几秒...</span></div><img oncontextmenu="return false;" ondragstart="return false;" onload="WebPreview.Image.onLoad(this)" onerror="WebPreview.Image.onError(this)" class="lazy" data-src="//view-cache.book118.com/view3/M01/08/1F/wKh2BVyH_LiAFZalAAEQckJK5H4343.png"></div><div class="webpreview-split">&nbsp;</div><div class="webpreview-item" data-id="5" style="min-height: 1120px;"><div class="loading"><em></em><em></em><em></em><em></em><em></em><em></em><em></em><em></em><em></em><em></em><em></em><em></em><span>预览加载中，请您耐心等待几秒...</span></div><img oncontextmenu="return false;" ondragstart="return false;" onload="WebPreview.Image.onLoad(this)" onerror="WebPreview.Image.onError(this)" class="lazy" data-src="//view-cache.book118.com/view3/M04/08/1F/wKh2BVyH_LiAbpovAAEArcqf-B4965.png"></div><div class="webpreview-split">&nbsp;</div><div class="webpreview-grab"></div></div>
+            <div class="preview-ft" style="display: block;"><div class="btns"><button type="button" id="btn_preview_remain" class="btn btn-remain" owa-btn="had"><span>剩余<b>37</b>页未预览，继续预览</span> <i class="icon-detail"></i></button><div class="read_and_download"><button type="button" id="btn_preview_download" class="btn btn-download" data-sm="click,#btn_preview_download,1">下载文档</button></div></div></div>
+            <div class="preview-bar">
+                <div class="container">
+                    <div class="bar">
+                        <ul class="page"><li><a data-owa="preview_pic_prev" class="prev disabled" href="javascript:;" title="上一页" owa-btn="had"><i class="icon-detail"></i></a></li><li><input class="number" type="text" value="1"> <span class="counts"> / 42</span></li><li><a data-owa="preview_pic_next" class="next" href="javascript:;" title="下一页" owa-btn="had"><i class="icon-detail"></i></a></li><li><a data-owa="preview_pic_big" class="zoom zoom-big" data-zoom="big" href="javascript:;" title="放大" owa-btn="had"><i class="icon-detail"></i></a></li><li><a data-owa="preview_pic_normal" class="zoom zoom-normal disabled" data-zoom="normal" href="javascript:;" title="缩小" owa-btn="had"><i class="icon-detail"></i></a></li><li><a data-owa="preview_pic_full" class="zoom zoom-full" data-zoom="full" href="javascript:;" title="全屏" owa-btn="had"><i class="icon-detail"></i></a></li></ul>
+                        <ul class="operate">
+                            <li><a data-owa="bar_download" id="bar_download" class="btn btn-download" href="javascript:;" title="下载OpenCASCADE学习笔记解析.doc" owa-btn="had" data-sm="click,#bar_download,1"><i class="icon-detail"></i> <span>下载文档</span></a></li>
+                            <li class="collect"><a data-owa="bar_collect" id="bar_collect" class="op" href="javascript:;" title="收藏" owa-btn="had"><i class="icon-detail"></i> <span>收藏</span></a></li>
+                            <li class="share"><a data-owa="bar_share" id="bar_share" class="op" href="javascript:;" title="分享" owa-btn="had"><i class="icon-detail"></i> <span>分享</span> <small class="icon-font icon-common icon-common-badge-min">赏</small></a></li>
+                            <li class="good"><a data-owa="bar_good" id="bar_good" class="op" href="javascript:;" title="顶" owa-bind="had" owa-btn="had"><i class="icon-detail"></i> <span>0</span></a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--下载提示 start-->
+        <div class="notice">
+            <ul class="tab-nav clear">
+                <li><a href="javascript:;" title="下载提示" data-tab-target="tip">下载提示 <i class="icon-detail"></i></a></li>
+                <li><a href="javascript:;" title="文本预览" data-tab-target="txt">文本预览 <i class="icon-detail"></i></a></li>
+                <li><a href="https://max.book118.com/html/xzcj.html" target="_blank" title="常见问题">常见问题</a></li>
+            </ul>
+            <div class="tab-items">
+                <div class="tab-item tip" data-tab-item="tip">
+                    <div class="list">
+                        <ol><li>1、本文档共<strong>42</strong>页，可阅读全部内容。</li>
+<li>2、本文档内容版权归属内容提供方，所产生的收益全部归内容提供方所有。如果您对本文有版权争议，可选择认领，认领后既往收益都归您。</li>
+<li>3、本文档由用户上传，本站不保证质量和数量令人满意，可能有诸多瑕疵，付费之前，请仔细先通过免费阅读内容等途径辨别内容交易风险。如存在严重挂羊头卖狗肉之情形，可联系本站下载客服投诉处理。</li>
+<li>文档侵权举报电话：400-050-0739(电话支持时间：9:00-19:00)。</li>
+</ol>
+                    </div>
+                </div>
+                <div class="tab-item txt" data-tab-item="txt">
+                    <div class="desc">OpenCASCADE学习笔记解析</div>
+                    <br>
+                    <div class="article">前言
+很久就想这篇东西，可一直懒于动脑且为一些俗事烦恼，所以才拖到现在才动笔把我上学期间一篇论文整理一下，仅供参考。我分成几段来写，如果想看懂这篇文章，那首先要了解每段之前的关键词，不懂的可以在网上搜一下。然后还有看这篇文章的时候希望你能按自己的需要来看，有很多是写给自己看的，你只挑自己有用的看就行了，省得到时候埋怨我浪费你宝贵的时间，我这人写东西不行，尽量写的有条理，尽量吧。
+第1章 意义，它是三维造型软件的内核、基础。
+关键词：三维造型软件、虚拟现实技术、仿真技术、OpenGL、几何内核系统、布尔操作
+首先，做什么事情都要有意义，因此我先说明一下Open CASCADE到底是个什么类型的工具，使用这个工具是否对你将要完成的目标有帮助。如果有帮助，那么你可以继续往下看它的具体用法；如果没有，那么你就应该按照你的目标继续寻找实现目标的手段，不用把时间浪费在这篇文章上；如果你清楚了Open CASCADE的这一工具是干什么用的就可以跳过意义直接看下一章。
+我先说一下我对这个工具的理解，然后会贴一些网上对这个工具的说明。Open CASCADE是一款三维造型软件的内核系统，也就是制作三维造型软件的工具。
+那何为三维造型软件呢？其实市面上已经有很多这样的软件了，比如说PRO/E、UE、Solid Edge、Catia、国内还自主研发的金银花系统（好象叫这个名字）以上这些大多都是用于工业上的，3DMAX、VRML（这里要说明一下VRML其实是一款适合网络的三维造型语言，应属语言系列，和HTML语言类似，不太附和三维造型软件的标准）也是三维造型软件，当然还有很多很多这种类型的软件，就不做过多介绍。三维造型软件，可以在电脑上如实地（尺寸、颜色、材质等）搭建起一个虚拟的模型，这些模型可以用于工业设计、艺术设计、装修设计等等等一系列的虚拟现实技术相关的行业，也可以用来做一些仿真实验的模型构建。可能有很多人都已经用过一款或两款三维造型软件，但是你在用的时候想没想过三维造型软件是怎么做出来的呢？它的底层是由什么支持的？它是由两部分支持的，一是硬件支持，如显卡，这个我们不讨论；二是软件，作为软件，我猜想（注意是我猜的，如有疑问请查实）它也是可以分成两个部分，一是硬件驱动的标准体系（请关注OpenGL），二就是几何内核系统。硬件支持和硬件驱动标准都不是本篇要讨论的内容，这里重点介绍的是几何内核系统。
+如果你的目标只是构建一个三维模型用来做仿真实验或做一个虚拟现实环境，那么你可以选用三维造型软件来完成。现在已有的三维造型软件发展的已经很好了（我当年用的第一款是Solid Edge7.0，看看现在它的最新版本号吧，饿的神啊），不仅品种多，而且相当人性化，你想到了它也想到了，你没想到的它也想到了（注意这句话），恩，很好用。这里我建议，如果你能使用现有的三维造型软件完成你的工作任务，请尽量使用它们，原因有三:第一、站在巨人臂膀上能看的更远；第二、使用几何内核系统开发出来的三维造型软件这一过程是相当艰辛的，且不一定能有什么好的结果；第三、你真的确定三维造型软件不能完成你的工作目标吗？举个例子，Pro/E里有N多模块可供使用，你平常使用的可能只是零件、装配、工程图、板金、管道、电气模块这几个常用的，有些模块你可能从来就没见到过，但是你应该看看帮助或在网上查一下是否能用上其他的模块，如果能用上，那真要恭喜你了；还有，可以用一些编程工具，如VB、VC之类的开发Pro/E的模块，我没试过，只是听说来的。
+什么是几何内核系统？它是制作三维造型软件的工具，三维造型软件都是在几何内核系统的基础上制作完成的，因此一款几何内核系统的好坏直接决定着三维造型软件的优劣。
+那么我为什么要选择使用Open CASCADE？我的专业是机械设计，现在实验室里我们专业都在搞虚拟现实之类的项目，比如说VRML与MATLAB结合绘制地图、OpenGL碰撞检测、虚拟装配（我哥们做的，和我基本类似，但由于一些原因他没做完）、虚拟造型（这就是我的活）、机械人仿真（UG造型、用一个仿真软件做的仿真，名字忘了），说说我的吧，要求是做一个课件（很郁闷，毕业设计竟然是做课件），但还不能说做课件，因为这种东西是毕不了业的，课件的要求是在一个虚拟的环境下，构建各种模型、对这些模型进行必要的布尔操作及显示模型的三视图。问题来了，解决吧。三个要求，一是建模；二是布尔操作；三是三视图的制作。
+为了完成课题，我尝试了两种工具，VRML和Pro/E建模。
+第一，先说VRML。导师一开始想让我用VRML来做课题，一开始我也不懂就用了，简单说一下VRML吧（从网上的摘了一篇关于VRML的，见附录1-《什么是VRML》），VRML（Virtual Reality Modeling Language）即虚拟现实建模语言。是一种用于</div>
+                </div>
+            </div>
+        </div>
+        <!--下载提示 end-->
+        <!--您可能关注的文档 start-->
+        <div class="relate">
+            <div class="hd"><h3>您可能关注的文档</h3></div>
+            <div class="bd">
+                <ul class="list">
+                                    <li><a href="https://max.book118.com/html/2017/0110/82014215.shtm" title="O2O商城3.2解析.ppt" target="_blank" owa-href="had" data-sm="spm,1.2.5.0,0"><i class="icon-font icon-format icon-format-ppt"></i> <span>O2O商城3.2解析.ppt</span></a></li>
+                                    <li><a href="https://max.book118.com/html/2017/0110/82014295.shtm" title="NVH性能集成与开发-案例_27Jun2014解析.ppt" target="_blank" owa-href="had" data-sm="spm,1.2.5.1,0"><i class="icon-font icon-format icon-format-ppt"></i> <span>NVH性能集成与开发-案例_27Jun2014解析.ppt</span></a></li>
+                                    <li><a href="https://max.book118.com/html/2017/0110/82014303.shtm" title="office2003教程解析.ppt" target="_blank" owa-href="had" data-sm="spm,1.2.5.2,0"><i class="icon-font icon-format icon-format-ppt"></i> <span>office2003教程解析.ppt</span></a></li>
+                                    <li><a href="https://max.book118.com/html/2017/0110/82014342.shtm" title="OEM7200中文操作手册解析.doc" target="_blank" owa-href="had" data-sm="spm,1.2.5.3,0"><i class="icon-font icon-format icon-format-doc"></i> <span>OEM7200中文操作手册解析.doc</span></a></li>
+                                    <li><a href="https://max.book118.com/html/2017/0110/82014431.shtm" title="office3_计算机软件、硬件系统解析.ppt" target="_blank" owa-href="had" data-sm="spm,1.2.5.4,0"><i class="icon-font icon-format icon-format-ppt"></i> <span>office3_计算机软件、硬件系统解析.ppt</span></a></li>
+                                    <li><a href="https://max.book118.com/html/2017/0110/82014562.shtm" title="Office2Excel解析.ppt" target="_blank" owa-href="had" data-sm="spm,1.2.5.5,0"><i class="icon-font icon-format icon-format-ppt"></i> <span>Office2Excel解析.ppt</span></a></li>
+                                    <li><a href="https://max.book118.com/html/2017/0110/82014621.shtm" title="Office快捷键大全解析.doc" target="_blank" owa-href="had" data-sm="spm,1.2.5.6,0"><i class="icon-font icon-format icon-format-doc"></i> <span>Office快捷键大全解析.doc</span></a></li>
+                                    <li><a href="https://max.book118.com/html/2017/0110/82014706.shtm" title="offset、client、scroll区别解析.doc" target="_blank" owa-href="had" data-sm="spm,1.2.5.7,0"><i class="icon-font icon-format icon-format-doc"></i> <span>offset、client、scroll区别解析.doc</span></a></li>
+                                    <li><a href="https://max.book118.com/html/2017/0110/82014707.shtm" title="Office2007快速与熟悉解析.ppt" target="_blank" owa-href="had" data-sm="spm,1.2.5.8,0"><i class="icon-font icon-format icon-format-ppt"></i> <span>Office2007快速与熟悉解析.ppt</span></a></li>
+                                    <li><a href="https://max.book118.com/html/2017/0110/82014724.shtm" title="oflove译文ppt解析.ppt" target="_blank" owa-href="had" data-sm="spm,1.2.5.9,0"><i class="icon-font icon-format icon-format-ppt"></i> <span>oflove译文ppt解析.ppt</span></a></li>
+                                </ul>
+                <ul class="list">
+                                    <li><a href="https://max.book118.com/html/2021/0609/5331104111003241.shtm" title="小学生演讲稿.docx" target="_blank" owa-href="had" data-sm="spm,1.2.5.10,0"><i class="icon-font icon-format icon-format-docx"></i> <span>小学生演讲稿.docx</span></a></li>
+                                    <li><a href="https://max.book118.com/html/2021/0609/7024015061003131.shtm" title="期权市场业务运作事项(3).pptx" target="_blank" owa-href="had" data-sm="spm,1.2.5.11,0"><i class="icon-font icon-format icon-format-pptx"></i> <span>期权市场业务运作事项(3).pptx</span></a></li>
+                                    <li><a href="https://max.book118.com/html/2021/0609/6124204110003155.shtm" title="标准工作时间管理讲义 .pptx" target="_blank" owa-href="had" data-sm="spm,1.2.5.12,0"><i class="icon-font icon-format icon-format-pptx"></i> <span>标准工作时间管理讲义 .pptx</span></a></li>
+                                    <li><a href="https://max.book118.com/html/2021/0609/7032026061003131.shtm" title="服務品質與顧客滿意.ppt" target="_blank" owa-href="had" data-sm="spm,1.2.5.13,0"><i class="icon-font icon-format icon-format-ppt"></i> <span>服務品質與顧客滿意.ppt</span></a></li>
+                                    <li><a href="https://max.book118.com/html/2021/0609/6035005111003155.shtm" title="服務的價值觀.ppt" target="_blank" owa-href="had" data-sm="spm,1.2.5.14,0"><i class="icon-font icon-format icon-format-ppt"></i> <span>服務的價值觀.ppt</span></a></li>
+                                    <li><a href="https://max.book118.com/html/2021/0609/7054112061003131.shtm" title="紫色摇滚乐宣传科普介绍通用ppt.pptx" target="_blank" owa-href="had" data-sm="spm,1.2.5.15,0"><i class="icon-font icon-format icon-format-pptx"></i> <span>紫色摇滚乐宣传科普介绍通用ppt.pptx</span></a></li>
+                                    <li><a href="https://max.book118.com/html/2021/0317/5022342243003144.shtm" title="接入网解决方案.ppt" target="_blank" owa-href="had" data-sm="spm,1.2.5.16,0"><i class="icon-font icon-format icon-format-ppt"></i> <span>接入网解决方案.ppt</span></a></li>
+                                    <li><a href="https://max.book118.com/html/2021/0609/7115142101003131.shtm" title="2016届人教版地球与地图单元测试剖析.doc" target="_blank" owa-href="had" data-sm="spm,1.2.5.17,0"><i class="icon-font icon-format icon-format-doc"></i> <span>2016届人教版地球与地图单元测试剖析.doc</span></a></li>
+                                    <li><a href="https://max.book118.com/html/2021/0317/8133014110003061.shtm" title="教育云平台解决方案-.ppt" target="_blank" owa-href="had" data-sm="spm,1.2.5.18,0"><i class="icon-font icon-format icon-format-ppt"></i> <span>教育云平台解决方案-.ppt</span></a></li>
+                                    <li><a href="https://max.book118.com/html/2021/0325/8076057010003065.shtm" title="小学一年级六班亲子游活动方案.ppt" target="_blank" owa-href="had" data-sm="spm,1.2.5.19,0"><i class="icon-font icon-format icon-format-ppt"></i> <span>小学一年级六班亲子游活动方案.ppt</span></a></li>
+                                </ul>
+            </div>
+        </div>
+        <!--您可能关注的文档 end-->
+        <!--发表评论 start-->
+        <div class="comment">
+            <div class="hd"><h3>文档评论（0）</h3></div>
+            <div class="form">
+                <textarea class="comment-control" placeholder="请自觉遵守互联网相关的政策法规，严禁发布色情、暴力、反动的言论。"></textarea>
+                <div class="comment-commit">
+                    <button type="button" class="btn btn-commit" title="发表评论" disabled="">发表评论</button>
+                </div>
+            </div>
+        </div>
+        <!--发表评论 end-->
+    </div>
+    <div class="side">
+        <!--关于内容提供者 start-->
+        <div class="publish">
+                        <div class="bd">
+                <div class="info">
+                    <div class="logo">
+                        <img src="./OpenCASCADE学习笔记解析.doc_files/avator.png" alt="头像" onerror="this.src=&#39;//static.book118.com/user_center_v1/static/home/common/images/avator.png&#39;">
+                                                <i class="icon-detail icon-auth-user" title="个人认证"></i>
+                                            </div>
+                    <dl class="name">
+                        <dt>此项为空</dt>
+                        <dd title="该用户很懒，什么也没介绍">该用户很懒，什么也没介绍</dd>
+                    </dl>
+                </div>
+            </div>
+            <div class="ft">
+                <a class="btn btn-chat" href="javascript:;" id="btn_publish_chat" title="联系作者"><i class="icon-detail"></i> 联系作者</a>
+            </div>
+                    </div>
+        <!--关于内容提供者 end-->
+        <!-- 全民来找茬 start -->
+        <!-- <div class="whole">
+            <a href="/college/category9/article662.html" title="全民来找茬" target="_blank"><img src="//img.book118.com/sr1/M00/34/36/wKh2AmCBe_mIRoIAAAAm7S6M6gUAAVUWwAujBYAACce128.png" alt="全民来找茬"></a>
+        </div> -->
+        <!-- 全民来找茬 end -->
+        <!--相关文档 start-->
+        <div class="similar" style="display: block;">
+            <div class="hd"><h3>相关文档</h3><div class="more"><a id="btn_similar_more" href="https://max.book118.com/search.html?q=OpenCASCADE%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%E8%A7%A3%E6%9E%90" title="查看更多" target="_blank">更多 &gt;</a></div></div>
+            <div class="bd"><ul class="list"><li class="item"><a href="https://max.book118.com/html/2018/1104/5112024301001324.shtm" title="GBT 36354-2018 数字语言学习环境设计要求.pdf" target="_blank" owa-href="had" data-sm="spm,1.2.6.0,0"><strong><i class="icon-font icon-format icon-format-pdf"></i> <small>GBT 36354-2018 数字语言<em>学</em><em>习</em>环境设计要求.pdf</small></strong><span><small class="date">2018-11-04</small><small class="pagenumber">4页</small></span></a></li><li class="item"><a href="https://max.book118.com/html/2019/0423/8134065034002020.shtm" title="GB-T 4458.2-2003_参考学习资料.pdf" target="_blank" owa-href="had" data-sm="spm,1.2.6.1,0"><strong><i class="icon-font icon-format icon-format-pdf"></i> <small>GB-T 4458.2-2003_参考<em>学</em><em>习</em>资料.pdf</small></strong><span><small class="date">2019-04-23</small><small class="pagenumber">4页</small></span></a></li><li class="item"><a href="https://max.book118.com/html/2020/0304/7134063142002121.shtm" title="GBT 37998-2019  汉语言文化学习资源应用评价.pdf" target="_blank" owa-href="had" data-sm="spm,1.2.6.2,0"><strong><i class="icon-font icon-format icon-format-pdf"></i> <small>GBT 37998-2019  汉语言文化<em>学</em><em>习</em>资源应用评价.pdf</small></strong><span><small class="date">2020-03-04</small><small class="pagenumber">4页</small></span></a></li><li class="item"><a href="https://max.book118.com/html/2018/1014/5104231021001322.shtm" title="GB-T11345-2013标准解析.pdf" target="_blank" owa-href="had" data-sm="spm,1.2.6.3,0"><strong><i class="icon-font icon-format icon-format-pdf"></i> <small>GB-T11345-2013标准<em>解</em><em>析</em>.pdf</small></strong><span><small class="date">2018-10-14</small><small class="pagenumber">5页</small></span></a></li><li class="item"><a href="https://max.book118.com/html/2019/0310/8037073021002012.shtm" title="GBT19000-2016正式版（学习之家扫描）.pdf" target="_blank" owa-href="had" data-sm="spm,1.2.6.4,0"><strong><i class="icon-font icon-format icon-format-pdf"></i> <small>GBT19000-2016正式版（<em>学</em><em>习</em>之家扫描）.pdf</small></strong><span><small class="date">2019-03-10</small><small class="pagenumber">6页</small></span></a></li><li class="item"><a href="https://max.book118.com/html/2017/0610/113181713.shtm" title="GBT 29358-2012 非正规教育与培训的学习服务质量要求 职业培训.pdf" target="_blank" owa-href="had" data-sm="spm,1.2.6.5,0"><strong><i class="icon-font icon-format icon-format-pdf"></i> <small>GBT 29358-2012 非正规教育与培训的<em>学</em><em>习</em>服务质量要求 职业培训.pdf</small></strong><span><small class="date">2017-06-10</small><small class="pagenumber">4页</small></span></a></li><li class="item"><a href="https://max.book118.com/html/2019/0906/5300201243002123.shtm" title="GB∕T 5271.31-2006 信息技术 词汇 第31部分 人工智能机器学习.pdf" target="_blank" owa-href="had" data-sm="spm,1.2.6.6,0"><strong><i class="icon-font icon-format icon-format-pdf"></i> <small>GB∕T 5271.31-2006 信息技术 词汇 第31部分 人工智能机器<em>学</em><em>习</em>.pdf</small></strong><span><small class="date">2019-09-06</small><small class="pagenumber">4页</small></span></a></li><li class="item"><a href="https://max.book118.com/html/2018/0701/5013023001001301.shtm" title="GB∕T 36354-2018 数字语言学习环境设计要求(高清版).pdf" target="_blank" owa-href="had" data-sm="spm,1.2.6.7,0"><strong><i class="icon-font icon-format icon-format-pdf"></i> <small>GB∕T 36354-2018 数字语言<em>学</em><em>习</em>环境设计要求(高清版).pdf</small></strong><span><small class="date">2018-07-01</small><small class="pagenumber">4页</small></span></a></li><li class="item"><a href="https://max.book118.com/html/2019/0315/7112102162002013.shtm" title="GB T 36642-2018_信息技术 学习、教育和培训 在线课程.pdf" target="_blank" owa-href="had" data-sm="spm,1.2.6.8,0"><strong><i class="icon-font icon-format icon-format-pdf"></i> <small>GB T 36642-2018_信息技术 <em>学</em><em>习</em>、教育和培训 在线课程.pdf</small></strong><span><small class="date">2019-03-15</small><small class="pagenumber">4页</small></span></a></li><li class="item"><a href="https://max.book118.com/html/2018/1016/8025064053001127.shtm" title="GB∕T 36642-2018 信息技术 学习、教育和培训 在线课程(高清版).pdf" target="_blank" owa-href="had" data-sm="spm,1.2.6.9,0"><strong><i class="icon-font icon-format icon-format-pdf"></i> <small>GB∕T 36642-2018 信息技术 <em>学</em><em>习</em>、教育和培训 在线课程(高清版).pdf</small></strong><span><small class="date">2018-10-16</small><small class="pagenumber">4页</small></span></a></li></ul></div>
+        </div>
+        <!--相关文档 end-->
+        <!--知传链电子书 start-->
+                <!--知传链电子书 end-->   
+        <!--最近下载 start-->
+                <div class="favorite">
+            <div class="hd"><h3>最近下载</h3></div>
+            <div class="bd">
+                <ul class="list">
+                                        <li><a href="https://max.book118.com/html/2018/1009/7023142016001152.shtm" title="健康体检医疗服务项目+投标书.docx" target="_blank" class="" owa-href="had" data-sm="spm,1.2.7.0,0"><i class="icon-font icon-format icon-format-docx"></i> <span>健康体检医疗服务项目+投标书.docx</span></a></li>
+                                        <li><a href="https://max.book118.com/html/2019/0803/8071037076002040.shtm" title="L13G6_管沟及盖板(完整版).pdf" target="_blank" class="" owa-href="had" data-sm="spm,1.2.7.1,0"><i class="icon-font icon-format icon-format-pdf"></i> <span>L13G6_管沟及盖板(完整版).pdf</span></a></li>
+                                        <li><a href="https://max.book118.com/html/2018/0728/5113024140001303.shtm" title="《指南》背景下的幼儿园区域活动).ppt" target="_blank" class="" owa-href="had" data-sm="spm,1.2.7.2,0"><i class="icon-font icon-format icon-format-ppt"></i> <span>《指南》背景下的幼儿园区域活动).ppt</span></a></li>
+                                        <li><a href="https://max.book118.com/html/2019/0312/6143140131002014.shtm" title="城市居住区规划设计规范（2018年版）.pdf" target="_blank" class="" owa-href="had" data-sm="spm,1.2.7.3,0"><i class="icon-font icon-format icon-format-pdf"></i> <span>城市居住区规划设计规范（2018年版）.pdf</span></a></li>
+                                        <li><a href="https://max.book118.com/html/2017/0324/96692144.shtm" title="洛芬待因缓释片镇痛治疗36例的临床研究.PDF" target="_blank" class="" owa-href="had" data-sm="spm,1.2.7.4,0"><i class="icon-font icon-format icon-format-pdf"></i> <span>洛芬待因缓释片镇痛治疗36例的临床研究.PDF</span></a></li>
+                                        <li><a href="https://max.book118.com/html/2020/0816/8133014105002133.shtm" title="JGJ-T 182-2009锚杆锚固质量无损检测技术规程_（高清-无水印）.pdf" target="_blank" class="" owa-href="had" data-sm="spm,1.2.7.5,0"><i class="icon-font icon-format icon-format-pdf"></i> <span>JGJ-T 182-2009锚杆锚固质量无损检测技术规程_（高清-无水印）.pdf</span></a></li>
+                                        <li><a href="https://max.book118.com/html/2021/0306/7163044144003063.shtm" title="2021年高速公路管理处职代会工会工作报告.docx" target="_blank" class="" owa-href="had" data-sm="spm,1.2.7.6,0"><i class="icon-font icon-format icon-format-docx"></i> <span>2021年高速公路管理处职代会工会工作报告.docx</span></a></li>
+                                        <li><a href="https://max.book118.com/html/2018/1115/5330204114001331.shtm" title="外墙清洗方案说明.doc" target="_blank" class="" owa-href="had" data-sm="spm,1.2.7.7,0"><i class="icon-font icon-format icon-format-doc"></i> <span>外墙清洗方案说明.doc</span></a></li>
+                                        <li><a href="https://max.book118.com/html/2021/0206/5320030134003123.shtm" title="2020年种猪场养殖项目可行性研究报告.pdf" target="_blank" class="" owa-href="had" data-sm="spm,1.2.7.8,0"><i class="icon-font icon-format icon-format-pdf"></i> <span>2020年种猪场养殖项目可行性研究报告.pdf</span></a></li>
+                                        <li><a href="https://max.book118.com/html/2021/0328/6024131140003130.shtm" title="2021年支部建党百年学习党史党课讲稿10篇.doc" target="_blank" class="" owa-href="had" data-sm="spm,1.2.7.9,0"><i class="icon-font icon-format icon-format-doc"></i> <span>2021年支部建党百年学习党史党课讲稿10篇.doc</span></a></li>
+                                    </ul>
+            </div>
+        </div>
+                <!--最近下载 end-->
+        <!--相关课程推荐 start-->
+        <div class="course">
+            <div class="hd"><h3>相关课程推荐</h3><small class="icon-partner"></small></div>
+            <div class="bd"><ul class="list"><li><a href="https://ke.book118.com/course/1623.html" title="互联网思维与抖音短视频运营策略（精品短课）" target="_blank"><span class="coursecover"><img class="lazy" src="./OpenCASCADE学习笔记解析.doc_files/load.png" data-src="//img.book118.com/sr1/M00/25/3E/wKh2Al_0OLiIetb2AAIV7YqEeU8AAogCgGOH2kAAhYF815_350x197.png" alt="互联网思维与抖音短视频运营策略（精品短课）"></span><strong>互联网思维与抖音短视频运营策略（精品短课）</strong> <small>已有57121人学习</small></a></li><li><a href="https://ke.book118.com/course/1611.html" title="七步教你打造网红微课" target="_blank"><span class="coursecover"><img class="lazy" src="./OpenCASCADE学习笔记解析.doc_files/load.png" data-src="//img.book118.com/sr1/M00/25/3E/wKh2Al_0OKeIK2xKAAJ1tvwTq_4AAogCgE0TGEAAnXO542_350x197.png" alt="七步教你打造网红微课"></span><strong>七步教你打造网红微课</strong> <small>已有38248人学习</small></a></li><li><a href="https://ke.book118.com/course/1316.html" title="林伟贤讲商业系统" target="_blank"><span class="coursecover"><img class="lazy" src="./OpenCASCADE学习笔记解析.doc_files/load.png" data-src="//img.book118.com/sr1/M00/25/3E/wKh2Al_0N1uIF-PxAADddQ92fzEAAogCAFensAAAN2N090_350x197.png" alt="林伟贤讲商业系统"></span><strong>林伟贤讲商业系统</strong> <small>已有9132人学习</small></a></li></ul><div class="more"><a href="https://ke.book118.com/category.html" title="点击查看更多" id="btn_more_video" class="btn-more" target="_blank">查看更多</a></div></div>
+        </div>
+        <!--相关课程推荐 end-->
+        <div class="service-shop"><div class="carousel"><ol class="indicators"><li><a href="javascript:;" data-carousel-to="0" class=""><i></i></a></li><li><a href="javascript:;" data-carousel-to="1" class="active"><i></i></a></li></ol><ul class="list" style="height: 164px;"><li class="active" style="left: -60.3956%;"><a title="文件撰写" href="https://zhineng.book118.com/" class="cover" target="_blank"><img class="lazy-success" src="./OpenCASCADE学习笔记解析.doc_files/wKh2Al_-qWeIA1eUAABuli2-wZIAAotvwEIl0QAAG6u533.png" data-src="//img.book118.com/sr1/M00/26/22/wKh2Al_-qWeIA1eUAABuli2-wZIAAotvwEIl0QAAG6u533.png" alt="文件撰写"></a><a title="品牌宣传" href="https://zhineng.book118.com/" class="cover" target="_blank"><img class="lazy-success" src="./OpenCASCADE学习笔记解析.doc_files/wKh2Al_-qUqIVDB9AAB2zfUgZZ8AAotvwCa0WgAAHbl771.png" data-src="//img.book118.com/sr1/M00/26/22/wKh2Al_-qUqIVDB9AAB2zfUgZZ8AAotvwCa0WgAAHbl771.png  " alt="品牌宣传"></a><a title="论文指导" href="https://zhineng.book118.com/" class="cover" target="_blank"><img class="lazy-success" src="./OpenCASCADE学习笔记解析.doc_files/wKh2Al_-qSmIWKFzAABqJnFI00gAAotvgH-fg4AAGo-057.png" data-src="//img.book118.com/sr1/M00/26/22/wKh2Al_-qSmIWKFzAABqJnFI00gAAotvgH-fg4AAGo-057.png" alt="论文指导"></a><a title="PPT制作" href="https://zhineng.book118.com/" class="cover" target="_blank"><img class="lazy-success" src="./OpenCASCADE学习笔记解析.doc_files/wKh2Al_-qTqIFZ4aAAA8p2qOq9kAAotvwBkLboAADy_382.png" data-src="//img.book118.com/sr1/M00/26/22/wKh2Al_-qTqIFZ4aAAA8p2qOq9kAAotvwBkLboAADy_382.png" alt="PPT制作"></a></li><li class="active" style="left: 121.672px;"><a title="表格制作" href="https://zhineng.book118.com/" class="cover" target="_blank"><img class="lazy-success" src="./OpenCASCADE学习笔记解析.doc_files/wKh2Al_-qPmIS_t6AABRLcomJh8AAotvgEMra8AAFFF235.png" data-src="//img.book118.com/sr1/M00/26/22/wKh2Al_-qPmIS_t6AABRLcomJh8AAotvgEMra8AAFFF235.png" alt="表格制作"></a><a title="演讲稿" href="https://zhineng.book118.com/" class="cover" target="_blank"><img class="lazy-success" src="./OpenCASCADE学习笔记解析.doc_files/wKh2Al_-qYWIbQ2XAABgKEbQxmQAAEk1gEKCuYAAGBA337.png" data-src="//img.book118.com/sr1/M00/0B/2D/wKh2Al_-qYWIbQ2XAABgKEbQxmQAAEk1gEKCuYAAGBA337.png" alt="演讲稿"></a><a title="商业报告" href="https://zhineng.book118.com/" class="cover" target="_blank"><img class="lazy-success" src="./OpenCASCADE学习笔记解析.doc_files/wKh2Al_-qVqIf8NHAABqcT05t1gAAotvwC9vJYAAGqJ908.png" data-src="//img.book118.com/sr1/M00/26/22/wKh2Al_-qVqIf8NHAABqcT05t1gAAotvwC9vJYAAGqJ908.png" alt="商业报告"></a><a title="行业咨询" href="https://zhineng.book118.com/" class="cover" target="_blank"><img class="lazy-success" src="./OpenCASCADE学习笔记解析.doc_files/wKh2Al_-qReIXvyXAABjnZr8YVAAAotvgGRygEAAGO1928.png" data-src="//img.book118.com/sr1/M00/26/22/wKh2Al_-qReIXvyXAABjnZr8YVAAAotvgGRygEAAGO1928.png" alt="行业咨询"></a></li></ul></div><div class="more">更多定制，进入<a title="知识服务商城" href="https://zhineng.book118.com/" class="cover" target="_blank">知识服务商城</a>联系在线客服</div><div class="tip">广告</div></div>
+<script>
+    (window.adList = window.adList || []).push({
+        container: "service-shop"
+    });
+</script>
+<script src="./OpenCASCADE学习笔记解析.doc_files/serviceshop.js.下载" async="async" defer="defer"></script>
+    </div>
+</div>
+
+<div id="sidebar">
+    <ul class="list">
+                <!-- <li class="sidebar-item sidebar-sign">
+            <a class="sidebar-item-on" href="https://wj.qq.com/s2/7813428/7c71" title="问卷调查" target="_blank"><i class="icon-sidebar">&#xe74d;</i><small class="icon-font icon-common icon-common-badge-min">奖</small></a>
+            <div class="slip">
+                <div class="icon-triangle"></div>
+                <div class="panel">
+                    <p>问卷调查</p>
+                </div>
+            </div>
+        </li> -->
+                <li class="sidebar-item sidebar-prize">
+            <a id="sidebar_btn_prize" class="sidebar-item-on" href="javascript:;" data-href="/user_center_v1/home/active/reportDetail" title="获取奖励">
+                <i class="icon-font icon-common icon-common-prize"></i>
+            </a>
+        </li>
+        <li class="sidebar-item sidebar-qq">
+            <a class="sidebar-item-on" href="javascript:;" title="联系客服"><i class="icon-sidebar"></i></a>
+            <div class="slip">
+                <div class="icon-triangle"></div>
+                <div class="panel">
+                    <div class="auto">
+                        <a href="https://max.book118.com/index.php?g=Home&amp;m=Chat&amp;a=index" target="_blank" title="自助客服在线">
+                            <i class="icon-font icon-common icon-common-24"></i>
+                            <strong>在线智能回复</strong>
+                            <span>24小时为您服务</span>
+                        </a>
+                    </div>
+                    <ul class="qq">
+                        <li><a href="javascript:;" data-qq="3005891076"><i class="icon-font icon-common icon-common-qq"></i> <span>文档下载咨询</span></a></li>
+                        <li><a href="javascript:;" data-qq="3005833200"><i class="icon-font icon-common icon-common-qq"></i> <span>侵权投诉处理</span></a></li>
+                        <li><a href="javascript:;" data-qq="3005877604"><i class="icon-font icon-common icon-common-qq"></i> <span>文档上传咨询</span></a></li>
+                        <li><a href="javascript:;" data-qq="2850308154"><i class="icon-font icon-common icon-common-qq"></i> <span>网站建议反馈</span></a></li>
+                    </ul>
+                    <div class="group">
+                        <a class="group" target="_blank" href="https://shang.qq.com/wpa/qunwpa?idkey=500e8d681a6a378abd27ca272a7db495c85d02e183b50179e5c822fee00b76a1"><i class="icon-font icon-common icon-common-group"></i> <span>上传QQ群:784321556</span></a>
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li class="sidebar-item sidebar-wechat">
+            <a class="sidebar-item-on" href="javascript:;" title="关注微信公众号"><i class="icon-sidebar"></i></a>
+            <div class="slip">
+                <div class="icon-triangle"></div>
+                <div class="panel">
+                    <img alt="关注微信公众号" data-src="//img.book118.com/sr1/M00/28/0B/wKh2AmAXZG2IfWaAAAAU5NgtGu0AApWwAH_53IAABT8948.jpg">
+                    <span>关注微信公众号售出明细实时看</span>
+                </div>
+            </div>
+        </li>
+        <li class="sidebar-item sidebar-demandcollect">
+            <a class="sidebar-item-on" href="javascript:;" title="需求登记"><span>需求</span><span>登记</span><small></small></a>
+            <div class="slip">
+                <div class="icon-triangle"></div>
+                <div class="panel">
+                    <p>需求登记</p>
+                </div>
+            </div>
+        </li>
+        <li class="sidebar-item sidebar-top">
+            <a class="sidebar-item-on" href="javascript:;" title="返回顶部"><i class="icon-sidebar"></i></a>
+            <div class="slip">
+                <div class="icon-triangle"></div>
+                <div class="panel">
+                    <p>回到顶部</p>
+                </div>
+            </div>
+        </li>
+    </ul>
+</div>
+<div id="footer">
+    <div class="container">
+        <div class="site-link">
+            <dl>
+                <dt>版权处理</dt>
+                <dd><a href="https://max.book118.com/html/bqsm.html" title="版权声明">版权声明</a></dd>
+                <dd><a href="https://max.book118.com/html/qqcl.html" title="侵权处理">侵权处理</a></dd>
+                <dd><a href="https://max.book118.com/html/mzsm.html" title="免责声明">免责声明</a></dd>
+                <dd><a href="https://max.book118.com/tort-letter.html" title="致被侵权者一封信">致被侵权者一封信</a></dd>
+                <dd><a href="https://max.book118.com/html/wzxy.html" title="网站诺言">网站诺言</a></dd>
+            </dl>
+            <dl>
+                <dt>使用帮助</dt>
+                <dd><a href="https://max.book118.com/html/fwtk.html" title="用户服务条款">用户服务条款</a></dd>
+                <dd><a href="https://max.book118.com/html/ysbh.html" title="用户隐私保护">用户隐私保护</a></dd>
+                <dd><a href="https://max.book118.com/help3.html" title="上传下载">上传下载</a></dd>
+                <dd><a href="https://max.book118.com/help1.html" title="投稿赚钱">投稿赚钱</a></dd>
+                <dd><a href="https://max.book118.com/html/yhxy.html" title="用户协议">用户协议</a></dd>
+            </dl>
+            <dl>
+                <dt><a href="https://max.book118.com/college/" title="文赚学院">文赚学院</a></dt>
+                <dd><a href="https://max.book118.com/college/category1.html" title="文赚入门">文赚入门</a></dd>
+                <dd><a href="https://max.book118.com/college/category4.html" title="工具技巧">工具技巧</a></dd>
+                <dd><a href="https://max.book118.com/college/category5.html" title="官方表态">官方动态</a></dd>
+                <dd><a href="https://max.book118.com/college/category13.html" title="文档分析">文档分析</a></dd>
+                <dd><a href="https://max.book118.com/college/category8/article343" title="广告合作" target="_blank">广告合作</a></dd>
+            </dl>
+            <dl>
+                <dt>关于</dt>
+                <dd><a href="https://max.book118.com/about.html" title="关于网站">关于网站</a></dd>
+                <dd><a href="https://max.book118.com/help4.html" title="联系我们">联系我们</a></dd>
+                <dd><a href="https://max.book118.com/html/qywh.html" title="企业文化">企业文化</a></dd>
+                <dd><a href="https://max.book118.com/html/gsys.html" title="公司优势">公司优势</a></dd>
+                <dd><a href="https://max.book118.com/html/dwhz.html" title="对外合作">对外合作</a></dd>
+            </dl>
+            <dl>
+                <dt>更多</dt>
+                <dd><a target="_blank" href="https://max.book118.com/college/category9/article609.html" title="政府检查">政府检查</a></dd>
+                <dd><a target="_blank" href="https://max.book118.com/organization/" title="机构入驻">机构入驻</a></dd>
+                <dd><a target="_blank" href="https://max.book118.com/college/category9/article654.html" title="内容整治报告">内容整治报告</a></dd>
+                <dd><a target="_blank" href="https://max.book118.com/college/category8/article323" title="原创力公益">原创力公益</a></dd>
+            </dl>
+            <dl class="wechat">
+                <dt><img src="./OpenCASCADE学习笔记解析.doc_files/wKh2AmAXZG2IfWaAAAAU5NgtGu0AApWwAH_53IAABT8948.jpg" alt="微信扫码关注"></dt>
+                <dd>关注微信公众号</dd>
+            </dl>
+        </div>
+        <div class="desc">“原创力文档”前称为“文档投稿赚钱网”，本站为“文档C2C交易模式”，即用户上传的文档直接卖给(下载)用户，本站只是中间服务平台，本站所有文档下载所得的收益归上传人(含作者)所有【成交的100%(原创)】。原创力文档是网络服务平台方，若您的权利被侵害，侵权客服QQ：3005833200 电话：400-050-0739(电话支持时间：9:00-19:00) 欢迎举报，上传者QQ群:784321556</div>
+        <ul class="copyright">
+            <li><i class="icon-font icon-footer icon-footer-police"></i> 公安局备案号：51011502000106 <em>|</em> 工信部备案号：<a href="http://beian.miit.gov.cn/" title="蜀ICP备08101938号-1" target="_blank" rel="nofollow">蜀ICP备08101938号-1</a> <em>|</em> ICP经营许可证/EDI许可证：<a href="https://max.book118.com/jyxkz.html" title="川B2-20180569" target="_blank">川B2-20180569</a> <em>|</em> <a href="https://max.book118.com/yyzz.html" title="公司营业执照" target="_blank">公司营业执照</a> <em>|</em> 出版物经营许可证：<a href="https://max.book118.com/html/cbwxkz.html" title="成新出发高新字第046号" target="_blank">成新出发高新字第046号</a></li>
+            <li>© 2010-2021 max.book118.com 原创力文档. All Rights Reserved 四川文动网络科技有限公司 违法与不良信息举报电话：18582317992</li>
+        </ul>
+    </div>
+</div>
+<script type="text/javascript">
+    var __SRV__ = '4.0.',
+        __OPEN_HOST__ = '//openapi.book118.com/',
+        __API_HOST__ = '//api.book118.com/',
+        __PAY_HOST__ = '//pay.book118.com/',
+        __ZIP_HOST__ = '//www.zip118.com/',
+        __OPEN_ROOT__ = '//static.book118.com/open/static',
+        __LIB_ROOT__ = '//static.book118.com/user_center_v1/static/lib',
+        __HOME_ROOT__ = '//static.book118.com/user_center_v1/static/home',
+        __REWARD_ROOT__ = '//static.book118.com/user_center_v1/static/reward',
+        __UTIL_ROOT__ = '//static.book118.com/user_center_v1/static/util',
+        __PLUGIN_ROOT__ = '//static.book118.com/user_center_v1/static/plugin',
+        __UPLOAD_ROOT__ = '//static.book118.com/user_center_v1/static/upload';
+    var base = {
+        member: {
+            status: 0,
+            url: {
+                info: '/user_center_v1/user/Api/getUserInfo.html',
+                login: '/user_center_v1/user/Index/login.html',
+                quit: '/user_center_v1/user/Index/logout.html',
+                track: '/user_center_v1/user/Api/getBrowseInfo.html'
+            },
+            menu: {
+                index: '/user_center_v1/user/index/index.html',
+                recharge: '/user_center_v1/user/recharge/index.html',
+                doc: "/user_center_v1/user/order/index.html",
+                uploader: '/user_center_v1/home/index/welcome',
+                message: "/user_center_v1/user/SpaceMessage/userList/from/-1.html",
+                setting: "/user_center_v1/user/Account/bindInfo.html",
+                browse: "/user_center_v1/user/Document/myBrowse.html",
+                collect: "/user_center_v1/user/Document/myFavorite.html",
+                buy: "/user_center_v1/user/order/index.html"
+            }
+        },
+        auth: {
+            url: {
+                status: '/user_center_v1/detail/Api/getUserStatus.html',
+                authen_captcha: '/user_center_v1/home/Index/captcha/id/authen.html',
+                authen_send: '/user_center_v1/detail/Api/sendSMCode.html',
+                authen_sub: '/user_center_v1/detail/Api/authCheck.html'
+            }
+        },
+        search: {
+            url: {
+                sub: '/search.html?q=',
+                recommend: '/user_center_v1/detail/view/getSearchLog.html',
+                clear: '/user_center_v1/detail/view/delSearchLog.html',
+                auto: '/user_center_v1/detail/view/autoComplete.html'
+            }
+        },
+        _url: {
+            member: '/user_center_v1/user/Api/getUserInfo.html',
+            search: '/index.php?g=Api&m=Search&a=autoCompletion',
+            reward_sign: '/user_center_v1/user/Reward/loginReward.html'
+        }
+    };
+    //文动统计 
+    var sm_cmd = sm_cmd || [];
+    (function() {
+    var hm = document.createElement("script");
+    hm.src = "//static.book118.com/open/wd.js?fb04f36f1e0ee36c30fab46eec18d62f&v=0.0.0.0";
+    var s = document.getElementsByTagName("script")[0]; 
+    s.parentNode.insertBefore(hm, s);
+    })();
+</script>
+<script type="text/javascript" src="./OpenCASCADE学习笔记解析.doc_files/layer.js.下载"></script>
+<script type="text/javascript" src="./OpenCASCADE学习笔记解析.doc_files/util.js.下载"></script>
+
+
+<script type="text/javascript">
+    var sm_cmd = sm_cmd || [];
+    sm_cmd.push(['define',{doc_status:'3'}]);
+    var PAY_READ_TAG = 1,
+        NOT_DOWNLOAD_TAG = 1,
+        COCYRIGHT = 5,
+        PAY_READ_NEED = 1; //1、已付费即不显示  0 未付费需要显示
+    base.spider = 0;
+    base.detail = {
+        aid: 82015109, //文档加密id
+        mid: 8137123105000002,
+        format: 'doc',
+        title: 'OpenCASCADE学习笔记解析.doc', //文档标题
+        typePathInfo: {"312":{"id":"312","pid":"0","typename":"\u8ba1\u7b97\u673a","ispart":"0","channeltype":"17","issend":"0"},"316":{"id":"316","pid":"312","typename":"Java","ispart":"0","channeltype":"17","issend":"0"}},
+        senddate: '6b21994726e6a6482b29a14b85433b30',
+        time: '2017-01-10 08:01:26',
+        userid:'此项为空',
+        money: {
+            down: 350, //文档付费下载金币
+            read: 42 //文档付费阅读金币
+        },
+        preview: {
+            tip:{
+                copyright: COCYRIGHT == 3,
+                forbid: NOT_DOWNLOAD_TAG == 3            },
+            want: {  //请求开放下载
+                btn: NOT_DOWNLOAD_TAG == 3,
+                num: 0            }, 
+            channel: 'pic',//图片预览方式
+            download:{
+                qrcode: 0            }, 
+            office: {
+                aid: 82015109, //解密后的id
+                actual_page: 42, //真实页数
+                pay: PAY_READ_TAG != 0 || PAY_READ_NEED || 42 == 42 || NOT_DOWNLOAD_TAG == 3 ? false : true, //是否需要付费阅读
+                front: 'https://txt15.book118.com/2017/0110/book82016/82015109.png', //封面图
+                default_front: '//img.book118.com/sr1/M00/28/0B/wKh2AmAXZTaIICh-AACTfTfpavAAApWwgCmTT4AAJOV651.jpg',
+                src: '' //预览路径
+            },
+            pic: {
+                aid: 82015109, //解密后的id
+                pay: PAY_READ_TAG != 0 || PAY_READ_NEED || 42 == 42 || NOT_DOWNLOAD_TAG == 3 ? false : true, //是否需要付费阅读
+                actual_page: 42, //真实页数
+                preview_page: 42,  //可预览页数
+                view_token: 'yxihIGz6pNykQXbBJ7jR@R1XH9Toz27x' //预览的token
+            }
+        },
+        status: {
+            share: 1,
+            claim: 1,
+            download: 3,
+            activity: 0,
+            stand: 0        },
+        url: {
+            status: '/user_center_v1/detail/View/getDocExtInfo.html',
+            collect: '/user_center_v1/detail/Api/favorite.html',
+            good: '/user_center_v1/detail/Api/digg.html',
+            member: '/user_center_v1/detail/Api/getUserStatus.html',
+            comment: {
+                captcha: '/user_center_v1/home/index/captcha/id/feedback.html',
+                sub: '/user_center_v1/detail/Api/feedback.html',
+                list: '/user_center_v1/detail/View/feedbackList.html'
+            },
+            preview: {
+                pic: {
+                    re: '/user_center_v1/detail/Viewrecommendation/showRecommend.html'
+                },
+                office: {
+                    src: '/user_center_v1/detail/View/oldViewUrl.html',
+                    captcha: '/user_center_v1/home/index/captcha/id/verify.html',
+                    feedback: '/user_center_v1/detail/View/viewFeedback.html'
+                }
+            },
+            share: '/user_center_v1/detail/Api/getShareUrl.html',
+            interest: {
+                doc: 'preview/Viewrecommendation/getConcerned.html',
+                zip: 'index.php?m=Search&a=getSimilarZip'
+            },
+            auth: {
+                callback: '/user_center_v1/detail/view/getSomeData.html'
+            },
+            report: {
+                status: '/user_center_v1/detail/Api/getUserStatus.html',
+                sub: '/user_center_v1/detail/Api/report.html',
+                new_sub: '/user_center_v1/detail/Api/newReport.html',
+                upload: '/user_center_v1/detail/Api/uploadFile.html',
+                captcha: '/user_center_v1/home/index/captcha/id/report.html'
+            },
+            corpus: '/user_center_v1/detail/View/getViewLabel.html',
+            similar: '/user_center_v1/detail/View/ajaxRelatedData.html',
+            publish: '/user_center_v1/detail/View/getPublisherInfo.html',
+            category: '/user_center_v1/detail/View/getDocCateData.html',
+            course : {
+                list: '/course_v1/api/Course/getCourseByMaxCategory',
+                cate: '//ke.book118.com/category.html'
+            },
+            want: '/user_center_v1/detail/view/addWantDownNum.html',
+            download: {
+                init: '/user_center_v1/home/pay/checkBuyStatus.html',
+                own: '/user_center_v1/home/pay/checkQrcodeStatus.html',
+                confirm: '/user_center_v1/home/pay/confirm.html',
+                balance: '/user_center_v1/home/pay/confirmBalanceConsume.html',
+                turning: '/user_center_v1/home/pay/checkVirtualOrderStatus.html',
+                stand: '//api.book118.com/applet/stand/downUrl',
+                link: '/user_center_v1/home/pay/generateDownloadUrl.html',
+                email: '/user_center_v1/home/download/sendEmail.html',
+                recommend: '/user_center_v1/home/download/relationDocument.html',
+                paper: {
+                    award: '/user_center_v1/home/download/getAward.html',
+                    use: '//paper.book118.com/home/User/getIncome.html'
+                }
+            },
+            account: {
+                select: '/user_center_v1/home/pay/selectAccount.html',
+                bind: '/user_center_v1/home/pay/bind.html',
+                mobile: '/user_center_v1/home/pay/checkMobile.html',
+                send: '/user_center_v1/home/pay/sendMobile.html'
+            },
+            read: {
+                init: '/user_center_v1/home/pay/checkBuyStatus.html',
+                confirm: '/user_center_v1/home/pay/confirm.html',
+                balance: '/user_center_v1/home/pay/confirmBalanceConsume.html',
+                turning: '/user_center_v1/home/pay/checkVirtualOrderStatus.html',
+                link: '/user_center_v1/home/pay/generateDownloadUrl.html',
+                again: '/user_center_v1/home/pay/bindAuth.html'
+            },
+            cangqiong: '',
+            hit: '/index.php?m=Ajax&a=docHits'
+        }
+    };
+    base.tort = {
+        url: {
+            track: {
+                list: '/user_center_v1/detail/View/ajaxRecord.html',
+                plus: '/user_center_v1/detail/View/ajaxGetDocInfo.html'
+            },
+            claim: {
+                sub: '/user_center_v1/detail/Api/documentClaim.html',
+                upload: '/user_center_v1/detail/Api/uploadClaimFile.html'
+            },
+            free: {
+                sub: '/user_center_v1/detail/Api/tortApply.html',
+                upload: '/user_center_v1/detail/Api/uploadClaimFile.html',
+                captcha: '/user_center_v1/home/Index/captcha/id/tortapply.html',
+                send: '/user_center_v1/detail/Api/tortSendMobileCode.html'
+            },
+            del: {
+                sub: '/user_center_v1/detail/Api/documentClaim.html',
+                upload: '/user_center_v1/detail/Api/uploadClaimFile.html'
+            }
+        }
+    };
+    base.recommend = {
+        url:{
+            recommend:'/user_center_v1/detail/View/ajaxKeleData.html'
+        }
+    };
+var invoice_url = '/user_center_v1/user/Invoice/index.html';
+</script>
+
+<script type="text/javascript" src="./OpenCASCADE学习笔记解析.doc_files/common.js.下载"></script>
+
+
+<script type="text/javascript" src="./OpenCASCADE学习笔记解析.doc_files/detail.js.下载"></script>
+<script type="text/javascript" src="./OpenCASCADE学习笔记解析.doc_files/webpreview.js.下载"></script>
+
+
+</body></html>
